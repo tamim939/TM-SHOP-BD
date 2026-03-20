@@ -1,0 +1,41 @@
+{
+  "rules": {
+    "products": {
+      ".read": true,
+      ".write": "auth != null && (auth.token.email === 'rsjonayed07@gmail.com' || auth.token.email === 'tamimbhai23@gmail.com')"
+    },
+    "categories": {
+      ".read": true,
+      ".write": "auth != null && (auth.token.email === 'rsjonayed07@gmail.com' || auth.token.email === 'tamimbhai23@gmail.com')"
+    },
+    "sliders": {
+      ".read": true,
+      ".write": "auth != null && (auth.token.email === 'rsjonayed07@gmail.com' || auth.token.email === 'tamimbhai23@gmail.com')"
+    },
+    "settings": {
+      ".read": true,
+      ".write": "auth != null && (auth.token.email === 'rsjonayed07@gmail.com' || auth.token.email === 'tamimbhai23@gmail.com')"
+    },
+    "reviews": {
+      ".read": true,
+      "$productId": {
+        ".write": "auth != null"
+      }
+    },
+    "users": {
+      ".read": "auth != null && (auth.token.email === 'rsjonayed07@gmail.com' || auth.token.email === 'tamimbhai23@gmail.com')",
+      "$uid": {
+        ".read": "auth != null && (auth.uid === $uid || auth.token.email === 'rsjonayed07@gmail.com' || auth.token.email === 'tamimbhai23@gmail.com')",
+        ".write": "auth != null && (auth.uid === $uid || auth.token.email === 'rsjonayed07@gmail.com' || auth.token.email === 'tamimbhai23@gmail.com')"
+      }
+    },
+    "orders": {
+      ".indexOn": ["userId"],
+      ".read": "auth != null && (auth.token.email === 'rsjonayed07@gmail.com' || auth.token.email === 'tamimbhai23@gmail.com')",
+      "$orderId": {
+        ".read": "auth != null && (data.child('userId').val() === auth.uid || auth.token.email === 'rsjonayed07@gmail.com' || auth.token.email === 'tamimbhai23@gmail.com')",
+        ".write": "auth != null"
+      }
+    }
+  }
+}
