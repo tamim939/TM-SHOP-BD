@@ -5,19 +5,60 @@ import { Trash2, Plus, Minus, ShoppingBag, ArrowRight, CheckCircle } from 'lucid
 import { Link, useNavigate } from 'react-router-dom';
 
 export default function Cart() {
-  const { cart, removeFromCart, addToCart, clearCart, addOrder, user, settings } = useStore();
+  const { cart, removeFromCart, addToCart, clearCart, addOrder, user, settings, coupons, products } = useStore();
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState(false);
+  const [couponCode, setCouponCode] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
+  const [couponError, setCouponError] = useState('');
   const [formData, setFormData] = useState({
     name: user?.displayName || '',
     phone: '',
     address: ''
   });
+
+  React.useEffect(() => {
+    if (user?.displayName && !formData.name) {
+      setFormData(prev => ({ ...prev, name: user.displayName || '' }));
+    }
+  }, [user]);
+
   const navigate = useNavigate();
 
   const subtotal = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
   const deliveryCharge = settings.shippingCharge || 60;
-  const total = subtotal + deliveryCharge;
+  
+  const calculateDiscount = () => {
+    if (!appliedCoupon) return 0;
+    
+    // Special case for "PROTHOM" or similar if the user wants product-specific discount
+    if (appliedCoupon.code.toUpperCase() === 'PROTHOM') {
+      return cart.reduce((acc, item) => {
+        const product = products.find(p => p.id === item.productId);
+        return acc + ((product?.couponDiscount || 0) * item.quantity);
+      }, 0);
+    }
+
+    if (appliedCoupon.type === 'percentage') {
+      return Math.round((subtotal * appliedCoupon.discount) / 100);
+    }
+    return appliedCoupon.discount;
+  };
+
+  const discountAmount = calculateDiscount();
+  const total = subtotal + deliveryCharge - discountAmount;
+
+  const handleApplyCoupon = () => {
+    setCouponError('');
+    const coupon = coupons.find(c => c.code.toUpperCase() === couponCode.toUpperCase());
+    
+    if (coupon) {
+      setAppliedCoupon(coupon);
+      setCouponCode('');
+    } else {
+      setCouponError('ভুল কুপন কোড! আবার চেষ্টা করুন।');
+    }
+  };
 
   const handleUpdateQuantity = (productId: string, size: string, delta: number) => {
     const item = cart.find(i => i.productId === productId && i.size === size);
@@ -40,6 +81,8 @@ export default function Cart() {
       items: cart,
       totalAmount: total,
       deliveryCharge: deliveryCharge,
+      discountAmount: discountAmount,
+      couponCode: appliedCoupon?.code || null,
       status: 'pending' as const,
       createdAt: new Date().toISOString()
     };
@@ -164,13 +207,52 @@ export default function Cart() {
                         <span>Shipping Charge</span>
                         <span>Tk {deliveryCharge}</span>
                       </div>
+                      {appliedCoupon && (
+                        <div className="flex justify-between text-emerald-600">
+                          <span className="flex items-center">
+                            কুপন ডিসকাউন্ট ({appliedCoupon.code})
+                            <button onClick={() => setAppliedCoupon(null)} className="ml-1 text-red-500">
+                              <Trash2 size={12} />
+                            </button>
+                          </span>
+                          <span>- Tk {discountAmount}</span>
+                        </div>
+                      )}
+                      
+                      <div className="pt-2">
+                        <div className="flex space-x-2">
+                          <input
+                            type="text"
+                            placeholder="কুপন কোড লিখুন"
+                            value={couponCode}
+                            onChange={(e) => setCouponCode(e.target.value)}
+                            className="flex-grow border border-gray-300 rounded-lg py-2 px-3 focus:ring-2 focus:ring-emerald-500 outline-none text-sm"
+                          />
+                          <button
+                            type="button"
+                            onClick={handleApplyCoupon}
+                            className="bg-emerald-600 text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-emerald-700 transition-colors"
+                          >
+                            Apply
+                          </button>
+                        </div>
+                        {couponError && <p className="text-red-500 text-[10px] mt-1">{couponError}</p>}
+                      </div>
+
                       <div className="border-t pt-4 flex justify-between font-bold text-lg">
                         <span>Total</span>
                         <span className="text-emerald-600">Tk {total}</span>
                       </div>
                     </div>
                     <button 
-                      onClick={() => setIsCheckingOut(true)}
+                      onClick={() => {
+                        if (!user) {
+                          alert('অর্ডার করতে হলে আপনাকে লগইন করতে হবে।');
+                          navigate('/profile', { state: { from: '/cart' } });
+                          return;
+                        }
+                        setIsCheckingOut(true);
+                      }}
                       className="w-full bg-emerald-600 text-white py-4 rounded-xl font-bold hover:bg-emerald-700 transition-colors shadow-lg flex items-center justify-center space-x-2"
                     >
                       <span>Checkout</span>
@@ -212,6 +294,12 @@ export default function Cart() {
                       ></textarea>
                     </div>
                     <div className="border-t pt-4 mb-4">
+                      {appliedCoupon && (
+                        <div className="flex justify-between text-emerald-600 text-sm mb-2">
+                          <span>কুপন ডিসকাউন্ট ({appliedCoupon.code})</span>
+                          <span>- Tk {discountAmount}</span>
+                        </div>
+                      )}
                       <div className="flex justify-between font-bold text-lg mb-4">
                         <span>Total Payable</span>
                         <span className="text-emerald-600">Tk {total}</span>

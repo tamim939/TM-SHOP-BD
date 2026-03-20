@@ -32,6 +32,11 @@ export default function ProductDetail() {
     : 0;
 
   const handleOrderNow = () => {
+    if (!user) {
+      alert('অর্ডার করতে হলে আপনাকে লগইন করতে হবে।');
+      navigate('/profile', { state: { from: `/product/${product.slug}` } });
+      return;
+    }
     navigate('/checkout', { state: { product, selectedSize, quantity } });
   };
 

@@ -13,6 +13,7 @@ export interface Product {
   sizes?: string[];
   images?: string[];
   stock?: 'in-stock' | 'out-of-stock';
+  couponDiscount?: number;
 }
 
 export interface Category {
@@ -43,6 +44,15 @@ export interface Order {
   createdAt: string;
   note?: string;
   deliveryCharge?: number;
+  discountAmount?: number;
+  couponCode?: string;
+}
+
+export interface Coupon {
+  id: string;
+  code: string;
+  discount: number;
+  type: 'percentage' | 'fixed';
 }
 
 export interface Slider {
@@ -101,4 +111,5 @@ export interface Settings {
   logo?: string;
   companyName?: string;
   shippingCharge?: number;
+  shippingChargeOutside?: number;
 }

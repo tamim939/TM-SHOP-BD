@@ -7,7 +7,7 @@ import autoTable from 'jspdf-autotable';
 export default function OrderSuccess() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { product, selectedSize, quantity, formData } = location.state || {};
+  const { product, selectedSize, quantity, formData, totalAmount, shippingCharge, discountAmount, couponCode } = location.state || {};
 
   if (!product || !formData) {
     return (
@@ -28,9 +28,8 @@ export default function OrderSuccess() {
     hour12: true
   });
 
-  const shippingCharge = 70;
   const subtotal = product.price * quantity;
-  const total = subtotal + shippingCharge;
+  const total = totalAmount || (subtotal + (shippingCharge || 70) - (discountAmount || 0));
 
   const generatePDF = () => {
     const doc = new jsPDF();
@@ -71,16 +70,19 @@ export default function OrderSuccess() {
     // Summary
     const finalY = (doc as any).lastAutoTable.finalY + 10;
     doc.text(`Subtotal: BDT ${subtotal}`, 140, finalY);
-    doc.text(`Shipping: BDT ${shippingCharge}`, 140, finalY + 7);
+    doc.text(`Shipping: BDT ${shippingCharge || 0}`, 140, finalY + 7);
+    if (discountAmount > 0) {
+      doc.text(`Discount (${couponCode}): - BDT ${discountAmount}`, 140, finalY + 14);
+    }
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
-    doc.text(`Total: BDT ${total}`, 140, finalY + 15);
+    doc.text(`Total: BDT ${total}`, 140, finalY + 22);
     
     // Footer
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
-    doc.text('Thank you for shopping with TSB SHOP BD!', 105, finalY + 30, { align: 'center' });
-    doc.text('Contact: 09613005566', 105, finalY + 37, { align: 'center' });
+    doc.text('Thank you for shopping with TSB SHOP BD!', 105, finalY + 40, { align: 'center' });
+    doc.text('Contact: 09613005566', 105, finalY + 47, { align: 'center' });
     
     doc.save(`invoice-${orderId}.pdf`);
   };
@@ -137,7 +139,7 @@ export default function OrderSuccess() {
           </div>
           <div className="space-y-1">
             <p className="text-xs text-gray-400">Shipping Area:</p>
-            <p className="text-sm font-bold"></p>
+            <p className="text-sm font-bold">{formData.shippingLocation === 'inside' ? 'Inside Dhaka' : 'Outside Dhaka'}</p>
           </div>
         </div>
 
@@ -173,12 +175,14 @@ export default function OrderSuccess() {
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-gray-500">Shipping:</span>
-            <span className="font-medium">BDT {shippingCharge}</span>
+            <span className="font-medium">BDT {shippingCharge || 0}</span>
           </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-500">Discount:</span>
-            <span className="font-medium">BDT 0</span>
-          </div>
+          {discountAmount > 0 && (
+            <div className="flex justify-between text-sm text-emerald-600">
+              <span>Discount ({couponCode}):</span>
+              <span className="font-medium">- BDT {discountAmount}</span>
+            </div>
+          )}
           <div className="flex justify-between text-sm">
             <span className="text-gray-500">VAT:</span>
             <span className="font-medium">BDT 0</span>

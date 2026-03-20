@@ -1,5 +1,5 @@
 import { useLocation, useNavigate } from 'react-router-dom';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { CheckCircle2, CreditCard, Truck, Wallet } from 'lucide-react';
 import { useStore } from '../context/StoreContext';
@@ -8,15 +8,26 @@ import { sendTelegramNotification } from '../utils/telegram';
 export default function Checkout() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { addOrder, settings, user } = useStore();
+  const { addOrder, settings, user, coupons } = useStore();
   const { product, selectedSize, quantity } = location.state || {};
+
+  useEffect(() => {
+    if (!user) {
+      navigate('/profile', { state: { from: location.pathname, checkoutData: location.state } });
+    }
+  }, [user, navigate, location]);
 
   const [formData, setFormData] = useState({
     name: user?.displayName || '',
     phone: '',
     address: '',
-    paymentMethod: 'cod'
+    paymentMethod: 'cod',
+    shippingLocation: 'inside' as 'inside' | 'outside'
   });
+
+  const [couponCode, setCouponCode] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
+  const [couponError, setCouponError] = useState('');
 
   if (!product) {
     return (
@@ -26,6 +37,41 @@ export default function Checkout() {
       </div>
     );
   }
+
+  const shippingCharge = formData.shippingLocation === 'inside' 
+    ? (settings.shippingCharge || 0) 
+    : (settings.shippingChargeOutside || 0);
+
+  const subtotal = product.price * quantity;
+  
+  const calculateDiscount = () => {
+    if (!appliedCoupon) return 0;
+    
+    // Special case for "PROTHOM" or similar if the user wants product-specific discount
+    if (appliedCoupon.code.toUpperCase() === 'PROTHOM' && product.couponDiscount) {
+      return product.couponDiscount * quantity;
+    }
+
+    if (appliedCoupon.type === 'percentage') {
+      return Math.round((subtotal * appliedCoupon.discount) / 100);
+    }
+    return appliedCoupon.discount;
+  };
+
+  const discountAmount = calculateDiscount();
+  const totalAmount = subtotal + shippingCharge - discountAmount;
+
+  const handleApplyCoupon = () => {
+    setCouponError('');
+    const coupon = coupons.find(c => c.code.toUpperCase() === couponCode.toUpperCase());
+    
+    if (coupon) {
+      setAppliedCoupon(coupon);
+      setCouponCode('');
+    } else {
+      setCouponError('ভুল কুপন কোড! আবার চেষ্টা করুন।');
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,8 +89,10 @@ export default function Checkout() {
         size: selectedSize,
         image: product.image
       }],
-      totalAmount: product.price * quantity + (settings.shippingCharge || 0),
-      deliveryCharge: settings.shippingCharge || 0,
+      totalAmount: totalAmount,
+      deliveryCharge: shippingCharge,
+      discountAmount: discountAmount,
+      couponCode: appliedCoupon?.code || null,
       status: 'pending' as const,
       createdAt: new Date().toISOString()
     };
@@ -60,7 +108,11 @@ export default function Checkout() {
         product, 
         selectedSize, 
         quantity, 
-        formData 
+        formData,
+        totalAmount,
+        shippingCharge,
+        discountAmount,
+        couponCode: appliedCoupon?.code
       } 
     });
   };
@@ -106,6 +158,33 @@ export default function Checkout() {
                         value={formData.phone}
                         onChange={e => setFormData({...formData, phone: e.target.value})}
                       />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-gray-600">Shipping Location</label>
+                    <div className="grid grid-cols-2 gap-4">
+                      <button
+                        type="button"
+                        onClick={() => setFormData({...formData, shippingLocation: 'inside'})}
+                        className={`py-3 px-4 rounded-xl border-2 transition-all font-bold text-sm ${
+                          formData.shippingLocation === 'inside'
+                            ? 'border-emerald-600 bg-emerald-50 text-emerald-600'
+                            : 'border-gray-100 text-gray-500 hover:border-gray-200'
+                        }`}
+                      >
+                        Inside Dhaka (Tk {settings.shippingCharge})
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setFormData({...formData, shippingLocation: 'outside'})}
+                        className={`py-3 px-4 rounded-xl border-2 transition-all font-bold text-sm ${
+                          formData.shippingLocation === 'outside'
+                            ? 'border-emerald-600 bg-emerald-50 text-emerald-600'
+                            : 'border-gray-100 text-gray-500 hover:border-gray-200'
+                        }`}
+                      >
+                        Outside Dhaka (Tk {settings.shippingChargeOutside})
+                      </button>
                     </div>
                   </div>
                   <div className="space-y-2">
@@ -171,15 +250,48 @@ export default function Checkout() {
                 <div className="space-y-3 mb-6">
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-500">Subtotal</span>
-                    <span className="font-bold">Tk {product.price * quantity}</span>
+                    <span className="font-bold">Tk {subtotal}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-500">Shipping</span>
-                    <span className="font-bold">Tk {settings.shippingCharge}</span>
+                    <span className="font-bold">Tk {shippingCharge}</span>
                   </div>
+                  
+                  {appliedCoupon && (
+                    <div className="flex justify-between text-sm text-emerald-600">
+                      <span className="flex items-center">
+                        কুপন ডিসকাউন্ট ({appliedCoupon.code})
+                        <button onClick={() => setAppliedCoupon(null)} className="ml-1 text-red-500 hover:text-red-700">
+                          <CheckCircle2 size={12} />
+                        </button>
+                      </span>
+                      <span className="font-bold">- Tk {discountAmount}</span>
+                    </div>
+                  )}
+
+                  <div className="pt-4">
+                    <div className="flex space-x-2">
+                      <input
+                        type="text"
+                        placeholder="কুপন কোড লিখুন"
+                        value={couponCode}
+                        onChange={(e) => setCouponCode(e.target.value)}
+                        className="flex-grow border-2 border-gray-100 rounded-xl py-2 px-4 focus:border-emerald-600 outline-none text-sm"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleApplyCoupon}
+                        className="bg-emerald-600 text-white px-4 py-2 rounded-xl font-bold text-sm hover:bg-emerald-700 transition-all"
+                      >
+                        Apply
+                      </button>
+                    </div>
+                    {couponError && <p className="text-red-500 text-[10px] mt-1 ml-1">{couponError}</p>}
+                  </div>
+
                   <div className="flex justify-between text-lg font-bold pt-3 border-t">
                     <span>Total</span>
-                    <span className="text-emerald-600">Tk {product.price * quantity + settings.shippingCharge}</span>
+                    <span className="text-emerald-600">Tk {totalAmount}</span>
                   </div>
                 </div>
 

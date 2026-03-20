@@ -21,7 +21,8 @@ import {
   UserCheck,
   FileText,
   Send,
-  Star
+  Star,
+  Ticket
 } from 'lucide-react';
 import { useStore } from '../context/StoreContext';
 import { useNavigate } from 'react-router-dom';
@@ -57,8 +58,12 @@ const Admin: React.FC = () => {
     deleteUser,
     allUsers: users,
     reviews,
+    coupons,
     deleteReview,
-    addAdminReply
+    addAdminReply,
+    addCoupon,
+    updateCoupon,
+    deleteCoupon
   } = useStore();
 
   const navigate = useNavigate();
@@ -66,10 +71,12 @@ const Admin: React.FC = () => {
   const [isEditing, setIsEditing] = useState<any>(null);
   const [isEditingCategory, setIsEditingCategory] = useState<any>(null);
   const [isEditingSlider, setIsEditingSlider] = useState<any>(null);
+  const [isEditingCoupon, setIsEditingCoupon] = useState<any>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [showProductForm, setShowProductForm] = useState(false);
   const [showCategoryForm, setShowCategoryForm] = useState(false);
   const [showSliderForm, setShowSliderForm] = useState(false);
+  const [showCouponForm, setShowCouponForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [replyText, setReplyText] = useState<{ [key: string]: string }>({});
@@ -83,6 +90,7 @@ const Admin: React.FC = () => {
     image: '',
     description: '',
     stock: 'in-stock',
+    couponDiscount: '',
     isNew: true,
     isHot: false
   });
@@ -96,6 +104,12 @@ const Admin: React.FC = () => {
     image: '',
     mobileImage: '',
     link: ''
+  });
+
+  const [couponData, setCouponData] = useState({
+    code: '',
+    discount: '',
+    type: 'percentage' as 'percentage' | 'fixed'
   });
 
   useEffect(() => {
@@ -142,6 +156,7 @@ const Admin: React.FC = () => {
         image: formData.image || 'https://images.unsplash.com/photo-1586717791821-3f44a563dc4c?q=80&w=1000&auto=format&fit=crop',
         description: formData.description || '',
         stock: formData.stock || 'in-stock',
+        couponDiscount: formData.couponDiscount ? Number(formData.couponDiscount) : 0,
         isNew: formData.isNew,
         isHot: formData.isHot
       };
@@ -176,6 +191,7 @@ const Admin: React.FC = () => {
         image: '', 
         description: '', 
         stock: 'in-stock',
+        couponDiscount: '',
         isNew: true,
         isHot: false
       });
@@ -237,6 +253,38 @@ const Admin: React.FC = () => {
     } catch (error) {
       console.error("Error saving slider:", error);
       alert("স্লাইডার সেভ করতে সমস্যা হয়েছে। আবার চেষ্টা করুন।");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleSaveCoupon = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSaving(true);
+    try {
+      if (!couponData.code || !couponData.discount) {
+        alert("দয়া করে কোড এবং ডিসকাউন্ট প্রদান করুন।");
+        setIsSaving(false);
+        return;
+      }
+
+      const finalCouponData = {
+        code: couponData.code.toUpperCase(),
+        discount: Number(couponData.discount),
+        type: couponData.type
+      };
+
+      if (isEditingCoupon) {
+        await updateCoupon({ ...finalCouponData, id: isEditingCoupon.id });
+      } else {
+        await addCoupon(finalCouponData);
+      }
+      setShowCouponForm(false);
+      setIsEditingCoupon(null);
+      setCouponData({ code: '', discount: '', type: 'percentage' });
+    } catch (error) {
+      console.error("Error saving coupon:", error);
+      alert("কুপন সেভ করতে সমস্যা হয়েছে।");
     } finally {
       setIsSaving(false);
     }
@@ -474,6 +522,7 @@ const Admin: React.FC = () => {
             { id: 'products', label: 'প্রোডাক্টস', icon: Package },
             { id: 'categories', label: 'ক্যাটাগরি', icon: List },
             { id: 'sliders', label: 'স্লাইডার', icon: ImageIcon },
+            { id: 'coupons', label: 'কুপন', icon: Ticket },
             { id: 'users', label: 'ইউজার্স', icon: UsersIcon },
             { id: 'reviews', label: 'রিভিউ', icon: Star },
             { id: 'settings', label: 'সেটিংস', icon: SettingsIcon },
@@ -661,6 +710,12 @@ const Admin: React.FC = () => {
                           <span className="text-gray-500">ডেলিভারি চার্জ</span>
                           <span className="font-bold">৳{order.deliveryCharge || 0}</span>
                         </div>
+                        {order.discountAmount > 0 && (
+                          <div className="flex justify-between items-center text-emerald-600">
+                            <span className="text-sm">ডিসকাউন্ট {order.couponCode ? `(${order.couponCode})` : ''}</span>
+                            <span className="font-bold">- ৳{order.discountAmount}</span>
+                          </div>
+                        )}
                         <div className="flex justify-between items-center text-lg">
                           <span className="font-bold">মোট</span>
                           <span className="font-bold text-emerald-600">৳{order.totalAmount}</span>
@@ -687,7 +742,8 @@ const Admin: React.FC = () => {
                     category: '',
                     image: '',
                     description: '',
-                    stock: 'in-stock'
+                    stock: 'in-stock',
+                    couponDiscount: ''
                   });
                   setShowProductForm(true);
                 }}
@@ -793,6 +849,16 @@ const Admin: React.FC = () => {
                           <option value="out-of-stock">আউট অফ স্টক</option>
                         </select>
                       </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">কুপন ডিসকাউন্ট (Tk)</label>
+                        <input
+                          type="number"
+                          value={formData.couponDiscount}
+                          onChange={e => setFormData({ ...formData, couponDiscount: e.target.value })}
+                          placeholder="ঐচ্ছিক"
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
+                        />
+                      </div>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">ইমেজ ইউআরএল (ঐচ্ছিক)</label>
@@ -865,7 +931,14 @@ const Admin: React.FC = () => {
                   <img src={product.image} alt={product.name} className="w-full h-48 object-cover" />
                   <div className="p-4">
                     <h3 className="font-bold text-lg mb-1">{product.name}</h3>
-                    <p className="text-emerald-600 font-bold mb-1">৳{product.price}</p>
+                    <div className="flex justify-between items-center mb-1">
+                      <p className="text-emerald-600 font-bold">৳{product.price}</p>
+                      {product.couponDiscount && (
+                        <p className="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-bold">
+                          Coupon: -৳{product.couponDiscount}
+                        </p>
+                      )}
+                    </div>
                     <p className="text-xs text-gray-400 mb-4 uppercase tracking-wider">{product.category}</p>
                     <div className="flex space-x-2">
                       <button
@@ -876,7 +949,8 @@ const Admin: React.FC = () => {
                             category: product.category || '',
                             price: product.price.toString(),
                             oldPrice: product.oldPrice?.toString() || '',
-                            discount: product.discount?.toString() || ''
+                            discount: product.discount?.toString() || '',
+                            couponDiscount: product.couponDiscount?.toString() || ''
                           }); 
                         }}
                         className="flex-1 flex items-center justify-center space-x-2 bg-gray-100 text-gray-700 py-2 rounded-lg hover:bg-gray-200 transition-colors"
@@ -1100,6 +1174,117 @@ const Admin: React.FC = () => {
                       >
                         <Trash2 className="w-4 h-4" />
                         <span>ডিলিট</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : activeTab === 'coupons' ? (
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold">কুপন কোডসমূহ ({coupons.length})</h2>
+              <button
+                onClick={() => {
+                  setIsEditingCoupon(null);
+                  setCouponData({ code: '', discount: '', type: 'percentage' });
+                  setShowCouponForm(true);
+                }}
+                className="flex items-center space-x-2 bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition-colors"
+              >
+                <Plus className="w-5 h-5" />
+                <span>নতুন কুপন</span>
+              </button>
+            </div>
+
+            {(showCouponForm || isEditingCoupon) && (
+              <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                <div className="bg-white rounded-2xl p-6 w-full max-w-md">
+                  <div className="flex justify-between items-center mb-6">
+                    <h3 className="text-xl font-bold">{isEditingCoupon ? 'কুপন এডিট করুন' : 'নতুন কুপন যোগ করুন'}</h3>
+                    <button onClick={() => { setShowCouponForm(false); setIsEditingCoupon(null); }} className="text-gray-400 hover:text-gray-600">
+                      <XCircle className="w-6 h-6" />
+                    </button>
+                  </div>
+                  <form onSubmit={handleSaveCoupon} className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">কুপন কোড</label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="যেমন: SAVE10"
+                        value={couponData.code}
+                        onChange={e => setCouponData({ ...couponData, code: e.target.value })}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none uppercase"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">ডিসকাউন্ট টাইপ</label>
+                        <select
+                          value={couponData.type}
+                          onChange={e => setCouponData({ ...couponData, type: e.target.value as 'percentage' | 'fixed' })}
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
+                        >
+                          <option value="percentage">পার্সেন্টেজ (%)</option>
+                          <option value="fixed">ফিক্সড (Tk)</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">ডিসকাউন্ট পরিমাণ</label>
+                        <input
+                          type="number"
+                          required
+                          value={couponData.discount}
+                          onChange={e => setCouponData({ ...couponData, discount: e.target.value })}
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex justify-end space-x-3 pt-4 border-t">
+                      <button
+                        type="button"
+                        onClick={() => { setShowCouponForm(false); setIsEditingCoupon(null); }}
+                        className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                      >
+                        বাতিল
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={isSaving}
+                        className="px-6 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-50 font-bold"
+                      >
+                        {isSaving ? 'সেভ হচ্ছে...' : 'সেভ করুন'}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {coupons.map(coupon => (
+                <div key={coupon.id} className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
+                  <div className="flex justify-between items-start mb-4">
+                    <div>
+                      <h3 className="text-xl font-bold text-emerald-600">{coupon.code}</h3>
+                      <p className="text-sm text-gray-500">
+                        ডিসকাউন্ট: {coupon.discount}{coupon.type === 'percentage' ? '%' : ' Tk'}
+                      </p>
+                    </div>
+                    <div className="flex space-x-2">
+                      <button
+                        onClick={() => { setIsEditingCoupon(coupon); setCouponData({ code: coupon.code, discount: coupon.discount.toString(), type: coupon.type }); }}
+                        className="p-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                      >
+                        <Edit2 className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => deleteCoupon(coupon.id)}
+                        className="p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
                   </div>
@@ -1354,14 +1539,25 @@ const Admin: React.FC = () => {
                   />
                   <p className="text-xs text-gray-400 mt-1">লোগো পরিবর্তনের জন্য একটি সরাসরি ইমেজ লিঙ্ক দিন।</p>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">ডেলিভারি চার্জ (টাকা)</label>
-                  <input
-                    type="number"
-                    value={settings.shippingCharge || 60}
-                    onChange={e => updateSettings({ ...settings, shippingCharge: Number(e.target.value) })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
-                  />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">শিপিং চার্জ (ঢাকার ভিতরে)</label>
+                    <input
+                      type="number"
+                      value={settings.shippingCharge || 60}
+                      onChange={e => updateSettings({ ...settings, shippingCharge: Number(e.target.value) })}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">শিপিং চার্জ (ঢাকার বাহিরে)</label>
+                    <input
+                      type="number"
+                      value={settings.shippingChargeOutside || 120}
+                      onChange={e => updateSettings({ ...settings, shippingChargeOutside: Number(e.target.value) })}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
+                    />
+                  </div>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">হোয়াটসঅ্যাপ নম্বর</label>
