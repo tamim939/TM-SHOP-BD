@@ -20,33 +20,35 @@ export default function Hero() {
   }
 
   return (
-    <section className="relative w-full">
-      <Swiper
-        spaceBetween={0}
-        centeredSlides={true}
-        autoplay={{
-          delay: 15000,
-          disableOnInteraction: false,
-        }}
-        modules={[Autoplay]}
-        className="w-full aspect-[12/5] max-h-[600px]"
-      >
-        {sliders.map((slide) => (
-          <SwiperSlide key={slide.id}>
-            <Link to={slide.link || '#'} className="block w-full h-full">
-              <picture>
-                {slide.mobileImage && <source media="(max-width: 768px)" srcSet={slide.mobileImage} />}
-                <img 
-                  src={slide.image} 
-                  alt="Banner" 
-                  className="w-full h-full object-cover"
-                  referrerPolicy="no-referrer"
-                />
-              </picture>
-            </Link>
-          </SwiperSlide>
-        ))}
-      </Swiper>
+    <section className="relative w-full px-4 pt-4">
+      <div className="max-w-7xl mx-auto rounded-2xl overflow-hidden shadow-lg">
+        <Swiper
+          spaceBetween={0}
+          centeredSlides={true}
+          autoplay={{
+            delay: 15000,
+            disableOnInteraction: false,
+          }}
+          modules={[Autoplay]}
+          className="w-full aspect-[12/5] max-h-[600px]"
+        >
+          {sliders.map((slide) => (
+            <SwiperSlide key={slide.id}>
+              <Link to={slide.link || '#'} className="block w-full h-full">
+                <picture>
+                  {slide.mobileImage && <source media="(max-width: 768px)" srcSet={slide.mobileImage} />}
+                  <img 
+                    src={slide.image} 
+                    alt="Banner" 
+                    className="w-full h-full object-cover"
+                    referrerPolicy="no-referrer"
+                  />
+                </picture>
+              </Link>
+            </SwiperSlide>
+          ))}
+        </Swiper>
+      </div>
     </section>
   );
 }

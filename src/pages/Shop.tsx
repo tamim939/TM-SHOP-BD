@@ -14,7 +14,7 @@ export default function Shop() {
       <div className="container pt-56 pb-12">
         <div className="text-center mb-12 animate-pulse">
           <div className="h-10 w-64 bg-gray-200 mx-auto mb-4 rounded" />
-          <div className="w-20 h-1 bg-emerald-600 mx-auto" />
+          <div className="w-20 h-1 bg-red-600 mx-auto" />
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 lg:gap-8">
           {[...Array(10)].map((_, i) => (
@@ -36,7 +36,7 @@ export default function Shop() {
         <h1 className="text-3xl lg:text-4xl font-bold uppercase tracking-tight mb-4">
           {searchQuery ? `Search Results for "${searchQuery}"` : 'All Products'}
         </h1>
-        <div className="w-20 h-1 bg-emerald-600 mx-auto"></div>
+        <div className="w-20 h-1 bg-red-600 mx-auto"></div>
       </div>
 
       {filteredProducts.length === 0 ? (

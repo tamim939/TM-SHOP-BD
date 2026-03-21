@@ -22,7 +22,7 @@ export default function CategorySection() {
                 to={`/category/${category.slug}`}
                 className="group flex flex-col items-center space-y-3"
               >
-                <div className="relative w-20 h-20 lg:w-24 lg:h-24 overflow-hidden rounded-full border-2 border-emerald-100 group-hover:border-emerald-500 transition-all p-1">
+                <div className="relative w-20 h-20 lg:w-24 lg:h-24 overflow-hidden rounded-full border-2 border-red-100 group-hover:border-red-500 transition-all p-1">
                   <img 
                     src={category.image} 
                     alt={category.name} 
@@ -30,7 +30,7 @@ export default function CategorySection() {
                     referrerPolicy="no-referrer"
                   />
                 </div>
-                <span className="text-xs lg:text-sm font-bold text-gray-700 group-hover:text-emerald-600 transition-colors whitespace-nowrap">
+                <span className="text-xs lg:text-sm font-bold text-gray-700 group-hover:text-red-600 transition-colors whitespace-nowrap">
                   {category.name}
                 </span>
               </Link>

@@ -11,9 +11,9 @@ import Admin from './pages/Admin';
 import Wishlist from './pages/Wishlist';
 import Cart from './pages/Cart';
 import Profile from './pages/Profile';
+import Orders from './pages/Orders';
 import ScrollToTop from './components/ScrollToTop';
 import BottomNav from './components/BottomNav';
-import ChatWidget from './components/ChatWidget';
 import LoadingScreen from './components/LoadingScreen';
 import { StoreProvider, useStore } from './context/StoreContext';
 
@@ -40,12 +40,12 @@ function Layout() {
             <Route path="/wishlist" element={<Wishlist />} />
             <Route path="/cart" element={<Cart />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/orders" element={<Orders />} />
           </Routes>
         )}
       </main>
       {!isAdminPage && <Footer />}
       {!isAdminPage && <BottomNav />}
-      {!isAdminPage && <ChatWidget />}
     </div>
   );
 }

@@ -18,11 +18,11 @@ export default function ProductSection({ title, type, viewAllLink }: ProductSect
         <div className="flex items-center justify-between mb-8">
           <div className="relative">
             <h2 className="text-2xl lg:text-3xl font-bold uppercase tracking-tight">{title}</h2>
-            <div className="w-12 h-1 bg-emerald-600 mt-2"></div>
+            <div className="w-12 h-1 bg-red-600 mt-2"></div>
           </div>
           <a 
             href={viewAllLink} 
-            className="flex items-center space-x-1 text-sm font-bold text-emerald-600 hover:text-emerald-700 transition-colors"
+            className="flex items-center space-x-1 text-sm font-bold text-red-600 hover:text-red-700 transition-colors"
           >
             <span>See All</span>
             <ArrowRight size={16} />

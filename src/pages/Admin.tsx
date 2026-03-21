@@ -22,7 +22,8 @@ import {
   FileText,
   Send,
   Star,
-  Ticket
+  Ticket,
+  Home
 } from 'lucide-react';
 import { useStore } from '../context/StoreContext';
 import { useNavigate } from 'react-router-dom';
@@ -53,6 +54,7 @@ const Admin: React.FC = () => {
     deleteSlider,
     updateSettings,
     updateOrderStatus,
+    verifyPayment,
     deleteOrder,
     banUser,
     deleteUser,
@@ -88,16 +90,23 @@ const Admin: React.FC = () => {
     discount: '',
     category: '',
     image: '',
+    images: [] as string[],
+    maxImages: '5',
     description: '',
     stock: 'in-stock',
     couponDiscount: '',
+    productCouponCode: '',
+    productCouponDiscount: '',
     isNew: true,
-    isHot: false
+    isHot: false,
+    sizes: [] as string[]
   });
 
   const [categoryData, setCategoryData] = useState({
     name: '',
-    image: ''
+    image: '',
+    categoryCouponCode: '',
+    categoryCouponDiscount: ''
   });
 
   const [sliderData, setSliderData] = useState({
@@ -126,7 +135,7 @@ const Admin: React.FC = () => {
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-emerald-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-red-600"></div>
       </div>
     );
   }
@@ -137,14 +146,15 @@ const Admin: React.FC = () => {
     try {
       // Basic validation
       if (!formData.name || !formData.price) {
-        alert("দয়া করে নাম এবং দাম প্রদান করুন।");
+        alert("Please provide name and price.");
         setIsSaving(false);
         return;
       }
 
       const price = Number(formData.price);
+      const maxImages = Number(formData.maxImages) || 5;
       if (isNaN(price)) {
-        alert("দয়া করে সঠিক দাম প্রদান করুন।");
+        alert("Please provide a valid price.");
         setIsSaving(false);
         return;
       }
@@ -157,8 +167,13 @@ const Admin: React.FC = () => {
         description: formData.description || '',
         stock: formData.stock || 'in-stock',
         couponDiscount: formData.couponDiscount ? Number(formData.couponDiscount) : 0,
+        productCouponCode: formData.productCouponCode || '',
+        productCouponDiscount: formData.productCouponDiscount ? Number(formData.productCouponDiscount) : 0,
+        images: formData.images.filter(img => img.trim() !== ''),
+        maxImages: maxImages,
         isNew: formData.isNew,
-        isHot: formData.isHot
+        isHot: formData.isHot,
+        sizes: formData.sizes || []
       };
 
       if (formData.oldPrice) {
@@ -189,15 +204,20 @@ const Admin: React.FC = () => {
         discount: '', 
         category: '', 
         image: '', 
+        images: [] as string[],
+        maxImages: '5',
         description: '', 
         stock: 'in-stock',
         couponDiscount: '',
+        productCouponCode: '',
+        productCouponDiscount: '',
         isNew: true,
-        isHot: false
+        isHot: false,
+        sizes: [] as string[]
       });
     } catch (error: any) {
       console.error("Error saving product:", error);
-      alert(`প্রোডাক্ট সেভ করতে সমস্যা হয়েছে: ${error.message || 'Unknown error'}`);
+      alert(`Error saving product: ${error.message || 'Unknown error'}`);
     } finally {
       setIsSaving(false);
     }
@@ -208,14 +228,15 @@ const Admin: React.FC = () => {
     setIsSaving(true);
     try {
       if (!categoryData.name) {
-        alert("দয়া করে ক্যাটাগরির নাম প্রদান করুন।");
+        alert("Please provide category name.");
         setIsSaving(false);
         return;
       }
 
       const finalCategoryData = {
         ...categoryData,
-        image: categoryData.image || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=1000&auto=format&fit=crop'
+        image: categoryData.image || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=1000&auto=format&fit=crop',
+        categoryCouponDiscount: categoryData.categoryCouponDiscount ? Number(categoryData.categoryCouponDiscount) : undefined
       };
 
       if (isEditingCategory) {
@@ -223,16 +244,16 @@ const Admin: React.FC = () => {
           ...finalCategoryData, 
           id: isEditingCategory.id,
           slug: isEditingCategory.slug || ''
-        });
+        } as any);
       } else {
-        await addCategory(finalCategoryData);
+        await addCategory(finalCategoryData as any);
       }
       setShowCategoryForm(false);
       setIsEditingCategory(null);
       setCategoryData({ name: '', image: '' });
     } catch (error: any) {
       console.error("Error saving category:", error);
-      alert(`ক্যাটাগরি সেভ করতে সমস্যা হয়েছে: ${error.message || 'Unknown error'}`);
+      alert(`Error saving category: ${error.message || 'Unknown error'}`);
     } finally {
       setIsSaving(false);
     }
@@ -252,7 +273,7 @@ const Admin: React.FC = () => {
       setSliderData({ image: '', mobileImage: '', link: '' });
     } catch (error) {
       console.error("Error saving slider:", error);
-      alert("স্লাইডার সেভ করতে সমস্যা হয়েছে। আবার চেষ্টা করুন।");
+      alert("Error saving slider. Please try again.");
     } finally {
       setIsSaving(false);
     }
@@ -263,7 +284,7 @@ const Admin: React.FC = () => {
     setIsSaving(true);
     try {
       if (!couponData.code || !couponData.discount) {
-        alert("দয়া করে কোড এবং ডিসকাউন্ট প্রদান করুন।");
+        alert("Please provide code and discount.");
         setIsSaving(false);
         return;
       }
@@ -284,7 +305,7 @@ const Admin: React.FC = () => {
       setCouponData({ code: '', discount: '', type: 'percentage' });
     } catch (error) {
       console.error("Error saving coupon:", error);
-      alert("কুপন সেভ করতে সমস্যা হয়েছে।");
+      alert("Error saving coupon.");
     } finally {
       setIsSaving(false);
     }
@@ -295,7 +316,7 @@ const Admin: React.FC = () => {
     
     // Add Logo or Header
     doc.setFontSize(22);
-    doc.setTextColor(5, 150, 105); // Emerald-600
+    doc.setTextColor(220, 38, 38); // Red-600
     doc.text(settings.companyName || 'TSB SHOP BD', 105, 20, { align: 'center' });
     
     doc.setFontSize(10);
@@ -311,7 +332,7 @@ const Admin: React.FC = () => {
     
     doc.setFontSize(10);
     doc.text(`Order ID: #${order.id.substring(0, 8)}`, 20, 55);
-    doc.text(`Date: ${new Date(order.createdAt).toLocaleString('bn-BD')}`, 20, 62);
+    doc.text(`Date: ${new Date(order.createdAt).toLocaleString()}`, 20, 62);
     
     // Customer Info Box
     doc.setFillColor(249, 250, 251);
@@ -335,7 +356,7 @@ const Admin: React.FC = () => {
       startY: 115,
       head: [['Product', 'Size', 'Qty', 'Price', 'Total']],
       body: tableData,
-      headStyles: { fillColor: [5, 150, 105] },
+      headStyles: { fillColor: [220, 38, 38] },
       alternateRowStyles: { fillColor: [245, 245, 245] },
     });
 
@@ -369,13 +390,13 @@ const Admin: React.FC = () => {
     const todayOrders = orders.filter(o => new Date(o.createdAt).toLocaleDateString() === today);
 
     if (todayOrders.length === 0) {
-      alert('আজ কোনো অর্ডার নেই!');
+      alert('No orders today!');
       return;
     }
 
     const doc = new jsPDF();
     doc.setFontSize(18);
-    doc.setTextColor(5, 150, 105);
+    doc.setTextColor(220, 38, 38);
     doc.text(`${settings.companyName || 'TSB SHOP BD'} - Daily Orders Report`, 105, 20, { align: 'center' });
     doc.setFontSize(12);
     doc.text(`${today}`, 105, 28, { align: 'center' });
@@ -393,7 +414,7 @@ const Admin: React.FC = () => {
       startY: 30,
       head: [['ID', 'Customer', 'Phone', 'Items', 'Total', 'Status']],
       body: tableData,
-      headStyles: { fillColor: [5, 150, 105] },
+      headStyles: { fillColor: [220, 38, 38] },
     });
 
     const totalRevenue = todayOrders.reduce((sum, o) => sum + (o.totalAmount || o.total || 0), 0);
@@ -409,7 +430,7 @@ const Admin: React.FC = () => {
   const generateUsersReportPDF = () => {
     const doc = new jsPDF();
     doc.setFontSize(18);
-    doc.setTextColor(5, 150, 105);
+    doc.setTextColor(220, 38, 38);
     doc.text(`${settings.companyName || 'TSB SHOP BD'} - Registered Users Report`, 105, 20, { align: 'center' });
 
     const tableData = users.map(u => {
@@ -431,7 +452,7 @@ const Admin: React.FC = () => {
       startY: 30,
       head: [['Name', 'Email', 'Joined', 'Orders', 'Total Spent', 'Status']],
       body: tableData,
-      headStyles: { fillColor: [5, 150, 105] },
+      headStyles: { fillColor: [220, 38, 38] },
     });
 
     (doc as any).lastAutoTable.finalY || 30;
@@ -441,7 +462,7 @@ const Admin: React.FC = () => {
   const generateUserOrdersPDF = (user: any, userOrders: any[]) => {
     const doc = new jsPDF();
     doc.setFontSize(18);
-    doc.setTextColor(5, 150, 105);
+    doc.setTextColor(220, 38, 38);
     doc.text(`Order History: ${user.name || 'User'}`, 105, 20, { align: 'center' });
     doc.setFontSize(10);
     doc.setTextColor(100);
@@ -459,7 +480,7 @@ const Admin: React.FC = () => {
       startY: 35,
       head: [['Order ID', 'Date', 'Items', 'Total', 'Status']],
       body: tableData,
-      headStyles: { fillColor: [5, 150, 105] },
+      headStyles: { fillColor: [220, 38, 38] },
     });
 
     const totalOrdered = userOrders.reduce((sum, o) => sum + (o.totalAmount || o.total || 0), 0);
@@ -480,17 +501,17 @@ const Admin: React.FC = () => {
   };
 
   const stats = [
-    { label: 'মোট অর্ডার', value: orders.length, icon: ShoppingBag, color: 'bg-blue-500' },
-    { label: 'মোট প্রোডাক্ট', value: products.length, icon: Package, color: 'bg-emerald-500' },
-    { label: 'ক্যাটাগরি', value: categories.length, icon: List, color: 'bg-amber-500' },
-    { label: 'মোট আয়', value: `৳${orders.filter(o => o.status !== 'cancelled').reduce((sum, o) => sum + (o.totalAmount || 0), 0)}`, icon: LayoutDashboard, color: 'bg-indigo-500' },
+    { label: 'Total Orders', value: orders.length, icon: ShoppingBag, color: 'bg-blue-500' },
+    { label: 'Total Products', value: products.length, icon: Package, color: 'bg-red-500' },
+    { label: 'Categories', value: categories.length, icon: List, color: 'bg-amber-500' },
+    { label: 'Total Revenue', value: `Tk ${orders.filter(o => o.status !== 'cancelled').reduce((sum, o) => sum + (o.totalAmount || 0), 0)}`, icon: LayoutDashboard, color: 'bg-indigo-500' },
   ];
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col lg:flex-row">
       {/* Mobile Header */}
       <div className="lg:hidden bg-white border-b border-gray-200 p-4 flex items-center justify-between sticky top-0 z-50">
-        <h1 className="text-xl font-bold text-emerald-600">এডমিন প্যানেল</h1>
+        <h1 className="text-xl font-bold text-red-600">Admin Panel</h1>
         <button 
           onClick={() => setIsSidebarOpen(!isSidebarOpen)}
           className="p-2 text-gray-500 hover:bg-gray-100 rounded-lg"
@@ -513,19 +534,26 @@ const Admin: React.FC = () => {
         ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
         <div className="p-6 border-b border-gray-100 hidden lg:block">
-          <h1 className="text-xl font-bold text-emerald-600">এডমিন প্যানেল</h1>
+          <h1 className="text-xl font-bold text-red-600">Admin Panel</h1>
         </div>
         <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+          <button
+            onClick={() => navigate('/')}
+            className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-500 hover:bg-gray-50 transition-all mb-4 border border-gray-100"
+          >
+            <Home className="w-5 h-5" />
+            <span>Back to Home</span>
+          </button>
           {[
-            { id: 'dashboard', label: 'ড্যাশবোর্ড', icon: LayoutDashboard },
-            { id: 'orders', label: 'অর্ডারসমূহ', icon: ShoppingBag },
-            { id: 'products', label: 'প্রোডাক্টস', icon: Package },
-            { id: 'categories', label: 'ক্যাটাগরি', icon: List },
-            { id: 'sliders', label: 'স্লাইডার', icon: ImageIcon },
-            { id: 'coupons', label: 'কুপন', icon: Ticket },
-            { id: 'users', label: 'ইউজার্স', icon: UsersIcon },
-            { id: 'reviews', label: 'রিভিউ', icon: Star },
-            { id: 'settings', label: 'সেটিংস', icon: SettingsIcon },
+            { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+            { id: 'orders', label: 'Orders', icon: ShoppingBag },
+            { id: 'products', label: 'Products', icon: Package },
+            { id: 'categories', label: 'Categories', icon: List },
+            { id: 'sliders', label: 'Sliders', icon: ImageIcon },
+            { id: 'coupons', label: 'Coupons', icon: Ticket },
+            { id: 'users', label: 'Users', icon: UsersIcon },
+            { id: 'reviews', label: 'Reviews', icon: Star },
+            { id: 'settings', label: 'Settings', icon: SettingsIcon },
           ].map(item => (
             <button
               key={item.id}
@@ -535,7 +563,7 @@ const Admin: React.FC = () => {
               }}
               className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all ${
                 activeTab === item.id 
-                ? 'bg-emerald-50 text-emerald-600 font-semibold shadow-sm' 
+                ? 'bg-red-50 text-red-600 font-semibold shadow-sm' 
                 : 'text-gray-500 hover:bg-gray-50'
               }`}
             >
@@ -550,7 +578,7 @@ const Admin: React.FC = () => {
             className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-red-500 hover:bg-red-50 transition-all"
           >
             <LogOut className="w-5 h-5" />
-            <span>লগআউট</span>
+            <span>Logout</span>
           </button>
         </div>
       </div>
@@ -575,12 +603,12 @@ const Admin: React.FC = () => {
 
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 lg:p-6">
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-bold">সাম্প্রতিক অর্ডারসমূহ</h2>
+                <h2 className="text-xl font-bold">Recent Orders</h2>
                 <button 
                   onClick={() => setActiveTab('orders')}
-                  className="text-emerald-600 text-sm font-semibold hover:underline"
+                  className="text-red-600 text-sm font-semibold hover:underline"
                 >
-                  সব দেখুন
+                  View All
                 </button>
               </div>
               <div className="overflow-x-auto -mx-4 lg:mx-0">
@@ -588,11 +616,11 @@ const Admin: React.FC = () => {
                   <table className="w-full text-left">
                     <thead>
                       <tr className="text-gray-400 text-sm border-b border-gray-100">
-                        <th className="pb-4 font-medium">অর্ডার আইডি</th>
-                        <th className="pb-4 font-medium hidden sm:table-cell">কাস্টমার</th>
-                        <th className="pb-4 font-medium hidden md:table-cell">তারিখ</th>
-                        <th className="pb-4 font-medium">টোটাল</th>
-                        <th className="pb-4 font-medium">স্ট্যাটাস</th>
+                        <th className="pb-4 font-medium">Order ID</th>
+                        <th className="pb-4 font-medium hidden sm:table-cell">Customer</th>
+                        <th className="pb-4 font-medium hidden md:table-cell">Payment</th>
+                        <th className="pb-4 font-medium">Total</th>
+                        <th className="pb-4 font-medium">Status</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-50">
@@ -600,19 +628,26 @@ const Admin: React.FC = () => {
                         <tr key={order.id} className="text-sm">
                           <td className="py-4 font-medium">#{order.id.substring(0, 8)}</td>
                           <td className="py-4 hidden sm:table-cell">{order.customerName}</td>
-                          <td className="py-4 hidden md:table-cell">{new Date(order.createdAt).toLocaleDateString()}</td>
-                          <td className="py-4 font-bold">৳{order.totalAmount}</td>
+                          <td className="py-4 hidden md:table-cell">
+                            <div className="flex flex-col">
+                              <span className="font-bold uppercase text-[10px]">{order.paymentMethod || 'COD'}</span>
+                              <span className={`text-[9px] font-bold uppercase ${order.paymentStatus === 'verified' ? 'text-green-600' : 'text-amber-600'}`}>
+                                {order.paymentStatus?.replace('-', ' ')}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="py-4 font-bold">Tk {order.totalAmount}</td>
                           <td className="py-4">
                             <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                              order.status === 'completed' ? 'bg-emerald-100 text-emerald-600' :
+                              order.status === 'completed' ? 'bg-red-100 text-red-600' :
                               order.status === 'pending' ? 'bg-amber-100 text-amber-600' :
                               order.status === 'cancelled' ? 'bg-red-100 text-red-600' :
                               'bg-blue-100 text-blue-600'
                             }`}>
-                              {order.status === 'completed' ? 'সফল' : 
-                               order.status === 'pending' ? 'অপেক্ষমান' : 
-                               order.status === 'cancelled' ? 'বাতিল' : 
-                               order.status === 'processing' ? 'প্রসেসিং' : 'শিপড'}
+                              {order.status === 'completed' ? 'Success' : 
+                               order.status === 'pending' ? 'Pending' : 
+                               order.status === 'cancelled' ? 'Cancelled' : 
+                               order.status === 'processing' ? 'Processing' : 'Shipped'}
                             </span>
                           </td>
                         </tr>
@@ -626,13 +661,13 @@ const Admin: React.FC = () => {
         ) : activeTab === 'orders' ? (
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-              <h2 className="text-2xl font-bold">অর্ডারসমূহ ({orders.length})</h2>
+              <h2 className="text-2xl font-bold">Orders ({orders.length})</h2>
               <button
                 onClick={generateDailyOrdersPDF}
-                className="w-full sm:w-auto flex items-center justify-center space-x-2 bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition-colors"
+                className="w-full sm:w-auto flex items-center justify-center space-x-2 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
               >
                 <FileText className="w-5 h-5" />
-                <span>আজকের রিপোর্ট (PDF)</span>
+                <span>Daily Report (PDF)</span>
               </button>
             </div>
 
@@ -644,11 +679,11 @@ const Admin: React.FC = () => {
                       <div className="flex items-center space-x-3 mb-1">
                         <span className="font-bold text-lg">#{order.id.substring(0, 8)}</span>
                         <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                          order.status === 'completed' ? 'bg-emerald-100 text-emerald-600' :
+                          order.status === 'completed' ? 'bg-red-100 text-red-600' :
                           order.status === 'pending' ? 'bg-amber-100 text-amber-600' :
                           'bg-red-100 text-red-600'
                         }`}>
-                          {order.status === 'completed' ? 'সফল' : order.status === 'pending' ? 'অপেক্ষমান' : 'বাতিল'}
+                          {order.status === 'completed' ? 'Success' : order.status === 'pending' ? 'Pending' : 'Cancelled'}
                         </span>
                       </div>
                       <p className="text-sm text-gray-500">{new Date(order.createdAt).toLocaleString()}</p>
@@ -661,64 +696,104 @@ const Admin: React.FC = () => {
                           e.stopPropagation();
                           generateOrderPDF(order);
                         }}
-                        className="flex-1 sm:flex-none flex items-center justify-center p-2 text-emerald-600 bg-emerald-50 rounded-lg hover:bg-emerald-100 transition-colors"
-                        title="ইভয়েস ডাউনলোড"
+                        className="flex-1 sm:flex-none flex items-center justify-center p-2 text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors"
+                        title="Download Invoice"
                       >
                         <Download className="w-5 h-5" />
-                        <span className="ml-2 sm:hidden font-bold">PDF ডাউনলোড</span>
+                        <span className="ml-2 sm:hidden font-bold">Download PDF</span>
                       </button>
                       <button
                         onClick={() => deleteOrder(order.id)}
                         className="p-2 text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors"
-                        title="অর্ডার ডিলিট"
+                        title="Delete Order"
                       >
                         <Trash2 className="w-5 h-5" />
                       </button>
                       <select
                         value={order.status}
                         onChange={(e) => updateOrderStatus(order.id, e.target.value)}
-                        className="flex-1 sm:flex-none bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-500"
+                        className="flex-1 sm:flex-none bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-red-500"
                       >
-                        <option value="pending">অপেক্ষমান</option>
-                        <option value="processing">প্রসেসিং</option>
-                        <option value="shipped">শিপড</option>
-                        <option value="completed">সফল</option>
-                        <option value="cancelled">বাতিল</option>
+                        <option value="pending">Pending</option>
+                        <option value="processing">Processing</option>
+                        <option value="shipped">Shipped</option>
+                        <option value="completed">Success</option>
+                        <option value="cancelled">Cancelled</option>
                       </select>
                     </div>
                   </div>
+                  
+                  {order.paymentMethod !== 'cod' && (
+                    <div className="px-4 lg:px-6 py-3 bg-red-50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-red-100">
+                      <div className="flex flex-wrap items-center gap-4">
+                        <div className="flex items-center space-x-2">
+                          <span className="text-[10px] font-bold text-red-400 uppercase">Method:</span>
+                          <span className="text-xs font-black text-red-700 uppercase">{order.paymentMethod}</span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <span className="text-[10px] font-bold text-red-400 uppercase">Phone:</span>
+                          <span className="text-xs font-black text-red-700">{order.paymentPhone}</span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <span className="text-[10px] font-bold text-red-400 uppercase">TxID:</span>
+                          <span className="text-xs font-black text-red-700">{order.transactionId}</span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <span className="text-[10px] font-bold text-red-400 uppercase">Advance:</span>
+                          <span className="text-xs font-black text-red-700">Tk {order.advanceAmount}</span>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center space-x-2 w-full sm:w-auto">
+                        <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                          order.paymentStatus === 'awaiting-verification' ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'
+                        }`}>
+                          {order.paymentStatus?.replace('-', ' ')}
+                        </span>
+                        {order.paymentStatus === 'awaiting-verification' && (
+                          <button
+                            onClick={() => verifyPayment(order.id, 'verified')}
+                            className="flex-1 sm:flex-none bg-green-600 text-white px-3 py-1 rounded-lg text-[10px] font-bold hover:bg-green-700 transition-colors"
+                          >
+                            Verify Payment
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
                   <div className="p-4 lg:p-6 grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
                     <div>
-                      <h4 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">কাস্টমার তথ্য</h4>
+                      <h4 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Customer Info</h4>
                       <div className="space-y-2 bg-gray-50 p-4 rounded-xl">
                         <p className="font-bold">{order.customerName}</p>
                         <p className="text-gray-600">{order.customerPhone}</p>
                         <p className="text-gray-600 text-sm">{order.customerAddress}</p>
-                        {order.note && <p className="text-amber-600 text-sm italic">নোট: {order.note}</p>}
+                        {order.note && <p className="text-amber-600 text-sm italic">Note: {order.note}</p>}
                       </div>
                     </div>
                     <div>
-                      <h4 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">অর্ডার আইটেম</h4>
+                      <h4 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Order Items</h4>
                       <div className="space-y-3">
                         {order.items.map((item: any, idx: number) => (
                           <div key={idx} className="flex items-center justify-between text-sm">
                             <span className="text-gray-600">{item.name} {item.size ? `(${item.size})` : ''} x {item.quantity}</span>
-                            <span className="font-bold">৳{item.price * item.quantity}</span>
+                            <span className="font-bold">Tk {item.price * item.quantity}</span>
                           </div>
                         ))}
                         <div className="pt-3 border-t border-gray-100 flex justify-between items-center">
-                          <span className="text-gray-500">ডেলিভারি চার্জ</span>
-                          <span className="font-bold">৳{order.deliveryCharge || 0}</span>
+                          <span className="text-gray-500">Delivery Charge</span>
+                          <span className="font-bold">Tk {order.deliveryCharge || 0}</span>
                         </div>
                         {order.discountAmount > 0 && (
-                          <div className="flex justify-between items-center text-emerald-600">
-                            <span className="text-sm">ডিসকাউন্ট {order.couponCode ? `(${order.couponCode})` : ''}</span>
-                            <span className="font-bold">- ৳{order.discountAmount}</span>
+                          <div className="flex justify-between items-center text-red-600">
+                            <span className="text-sm">Discount {order.couponCode ? `(${order.couponCode})` : ''}</span>
+                            <span className="font-bold">- Tk {order.discountAmount}</span>
                           </div>
                         )}
                         <div className="flex justify-between items-center text-lg">
-                          <span className="font-bold">মোট</span>
-                          <span className="font-bold text-emerald-600">৳{order.totalAmount}</span>
+                          <span className="font-bold">Total</span>
+                          <span className="font-bold text-red-600">Tk {order.totalAmount}</span>
                         </div>
                       </div>
                     </div>
@@ -730,7 +805,7 @@ const Admin: React.FC = () => {
         ) : activeTab === 'products' ? (
           <div className="space-y-6">
             <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold">প্রোডাক্টস ({products.length})</h2>
+              <h2 className="text-2xl font-bold">Products ({products.length})</h2>
               <button
                 onClick={() => {
                   setIsEditing(null);
@@ -741,16 +816,23 @@ const Admin: React.FC = () => {
                     discount: '',
                     category: '',
                     image: '',
+                    images: [] as string[],
+                    maxImages: '5',
                     description: '',
                     stock: 'in-stock',
-                    couponDiscount: ''
+                    couponDiscount: '',
+                    productCouponCode: '',
+                    productCouponDiscount: '',
+                    isNew: true,
+                    isHot: false,
+                    sizes: [] as string[]
                   });
                   setShowProductForm(true);
                 }}
-                className="flex items-center space-x-2 bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition-colors"
+                className="flex items-center space-x-2 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
               >
                 <Plus className="w-5 h-5" />
-                <span>নতুন প্রোডাক্ট</span>
+                <span>New Product</span>
               </button>
             </div>
 
@@ -758,14 +840,14 @@ const Admin: React.FC = () => {
               <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
                 <div className="bg-white rounded-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
                   <div className="flex justify-between items-center mb-6">
-                    <h3 className="text-xl font-bold">{isEditing ? 'প্রোডাক্ট এডিট করুন' : 'নতুন প্রোডাক্ট যোগ করুন'}</h3>
+                    <h3 className="text-xl font-bold">{isEditing ? 'Edit Product' : 'Add New Product'}</h3>
                     <div className="flex space-x-3">
                       <button
                         type="button"
                         onClick={() => { setShowProductForm(false); setIsEditing(null); }}
                         className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm"
                       >
-                        বাতিল
+                        Cancel
                       </button>
                       <button
                         onClick={() => {
@@ -773,110 +855,195 @@ const Admin: React.FC = () => {
                           if (btn) btn.click();
                         }}
                         disabled={isSaving}
-                        className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-50 text-sm font-bold"
+                        className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 text-sm font-bold"
                       >
-                        {isSaving ? 'সেভ হচ্ছে...' : 'সেভ করুন'}
+                        {isSaving ? 'Saving...' : 'Save'}
                       </button>
                     </div>
                   </div>
                   <form id="product-form" onSubmit={handleSaveProduct} className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">নাম</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
                         <input
                           type="text"
                           required
                           value={formData.name}
                           onChange={e => setFormData({ ...formData, name: e.target.value })}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
                         />
                       </div>
                       <div className="grid grid-cols-3 gap-4">
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">প্রাইস (Tk)</label>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Price (Tk)</label>
                           <input
                             type="number"
                             required
                             value={formData.price}
                             onChange={e => setFormData({ ...formData, price: e.target.value })}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">পুরাতন প্রাইস</label>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Old Price</label>
                           <input
                             type="number"
                             value={formData.oldPrice}
                             onChange={e => setFormData({ ...formData, oldPrice: e.target.value })}
-                            placeholder="ঐচ্ছিক"
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
+                            placeholder="Optional"
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">ডিসকাউন্ট (%)</label>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Discount (%)</label>
                           <input
                             type="number"
                             value={formData.discount}
                             onChange={e => setFormData({ ...formData, discount: e.target.value })}
-                            placeholder="ঐচ্ছিক"
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
+                            placeholder="Optional"
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
                           />
                         </div>
                       </div>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">ক্যাটাগরি</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
                         <select
                           value={formData.category}
                           onChange={e => setFormData({ ...formData, category: e.target.value })}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
                         >
-                          <option value="">কোনো ক্যাটাগরি নেই</option>
+                          <option value="">No Category</option>
                           {categories.map(cat => (
                             <option key={cat.id} value={cat.slug}>{cat.name}</option>
                           ))}
                         </select>
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">স্টক</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Stock</label>
                         <select
                           value={formData.stock}
                           onChange={e => setFormData({ ...formData, stock: e.target.value })}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
                         >
-                          <option value="in-stock">ইন স্টক</option>
-                          <option value="out-of-stock">আউট অফ স্টক</option>
+                          <option value="in-stock">In Stock</option>
+                          <option value="out-of-stock">Out of Stock</option>
                         </select>
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">কুপন ডিসকাউন্ট (Tk)</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Coupon Discount (Tk)</label>
                         <input
                           type="number"
                           value={formData.couponDiscount}
                           onChange={e => setFormData({ ...formData, couponDiscount: e.target.value })}
-                          placeholder="ঐচ্ছিক"
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
+                          placeholder="Optional"
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Product Coupon Code</label>
+                        <input
+                          type="text"
+                          value={formData.productCouponCode}
+                          onChange={e => setFormData({ ...formData, productCouponCode: e.target.value })}
+                          placeholder="e.g. PROTHOM"
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Product Coupon Discount (%)</label>
+                        <input
+                          type="number"
+                          value={formData.productCouponDiscount}
+                          onChange={e => setFormData({ ...formData, productCouponDiscount: e.target.value })}
+                          placeholder="e.g. 10"
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
                         />
                       </div>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">ইমেজ ইউআরএল (ঐচ্ছিক)</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Sizes (Separate with comma)</label>
+                      <input
+                        type="text"
+                        value={formData.sizes?.join(', ') || ''}
+                        onChange={e => setFormData({ ...formData, sizes: e.target.value.split(',').map(s => s.trim()).filter(s => s !== '') })}
+                        placeholder="e.g. S, M, L, XL, XXL"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Image URL (Main)</label>
                       <input
                         type="text"
                         value={formData.image}
                         onChange={e => setFormData({ ...formData, image: e.target.value })}
-                        placeholder="ইমেজ না দিলে ডিফল্ট ইমেজ ব্যবহার হবে"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
+                        placeholder="Main image URL"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
                       />
                     </div>
+
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">বর্ণনা</label>
+                      <div className="flex justify-between items-center mb-1">
+                        <label className="block text-sm font-medium text-gray-700">Gallery Images (Max {formData.maxImages || 5})</label>
+                        <div className="flex items-center space-x-2">
+                          <span className="text-xs text-gray-500">Limit:</span>
+                          <input
+                            type="number"
+                            value={formData.maxImages}
+                            onChange={e => setFormData({ ...formData, maxImages: e.target.value })}
+                            className="w-16 px-2 py-1 border border-gray-300 rounded text-xs outline-none"
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        {formData.images.map((img, index) => (
+                          <div key={index} className="flex space-x-2">
+                            <input
+                              type="text"
+                              value={img}
+                              onChange={e => {
+                                const newImages = [...formData.images];
+                                newImages[index] = e.target.value;
+                                setFormData({ ...formData, images: newImages });
+                              }}
+                              placeholder={`Image ${index + 1} URL`}
+                              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none text-sm"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const newImages = formData.images.filter((_, i) => i !== index);
+                                setFormData({ ...formData, images: newImages });
+                              }}
+                              className="p-2 text-red-500 hover:bg-red-50 rounded-lg"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        ))}
+                        {formData.images.length < (Number(formData.maxImages) || 5) && (
+                          <button
+                            type="button"
+                            onClick={() => setFormData({ ...formData, images: [...formData.images, ''] })}
+                            className="w-full py-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-red-500 hover:text-red-500 transition-colors text-sm flex items-center justify-center space-x-2"
+                          >
+                            <Plus className="w-4 h-4" />
+                            <span>Add More Images</span>
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
                       <textarea
                         rows={4}
                         value={formData.description}
                         onChange={e => setFormData({ ...formData, description: e.target.value })}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
                       ></textarea>
                     </div>
 
@@ -886,18 +1053,18 @@ const Admin: React.FC = () => {
                           type="checkbox"
                           checked={formData.isNew}
                           onChange={e => setFormData({ ...formData, isNew: e.target.checked })}
-                          className="w-4 h-4 text-emerald-600 rounded border-gray-300 focus:ring-emerald-500"
+                          className="w-4 h-4 text-red-600 rounded border-gray-300 focus:ring-red-500"
                         />
-                        <span className="text-sm font-medium text-gray-700">নতুন প্রোডাক্ট (New Arrival)</span>
+                        <span className="text-sm font-medium text-gray-700">New Arrival</span>
                       </label>
                       <label className="flex items-center space-x-2 cursor-pointer">
                         <input
                           type="checkbox"
                           checked={formData.isHot}
                           onChange={e => setFormData({ ...formData, isHot: e.target.checked })}
-                          className="w-4 h-4 text-emerald-600 rounded border-gray-300 focus:ring-emerald-500"
+                          className="w-4 h-4 text-red-600 rounded border-gray-300 focus:ring-red-500"
                         />
-                        <span className="text-sm font-medium text-gray-700">হট প্রোডাক্ট (Hot Product)</span>
+                        <span className="text-sm font-medium text-gray-700">Hot Product</span>
                       </label>
                     </div>
                     
@@ -910,14 +1077,14 @@ const Admin: React.FC = () => {
                         onClick={() => { setShowProductForm(false); setIsEditing(null); }}
                         className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
                       >
-                        বাতিল
+                        Cancel
                       </button>
                       <button
                         type="submit"
                         disabled={isSaving}
-                        className="px-6 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-50 font-bold"
+                        className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 font-bold"
                       >
-                        {isSaving ? 'সেভ হচ্ছে...' : 'সেভ করুন'}
+                        {isSaving ? 'Saving...' : 'Save'}
                       </button>
                     </div>
                   </form>
@@ -932,13 +1099,19 @@ const Admin: React.FC = () => {
                   <div className="p-4">
                     <h3 className="font-bold text-lg mb-1">{product.name}</h3>
                     <div className="flex justify-between items-center mb-1">
-                      <p className="text-emerald-600 font-bold">৳{product.price}</p>
+                      <p className="text-red-600 font-bold">Tk {product.price}</p>
                       {product.couponDiscount && (
-                        <p className="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-bold">
-                          Coupon: -৳{product.couponDiscount}
+                        <p className="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full font-bold">
+                          Fixed: -Tk {product.couponDiscount}
                         </p>
                       )}
                     </div>
+                    {product.productCouponCode && (
+                      <div className="flex justify-between items-center mb-2">
+                        <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Code: {product.productCouponCode}</p>
+                        <p className="text-[10px] text-red-600 font-bold">-{product.productCouponDiscount}%</p>
+                      </div>
+                    )}
                     <p className="text-xs text-gray-400 mb-4 uppercase tracking-wider">{product.category}</p>
                     <div className="flex space-x-2">
                       <button
@@ -950,20 +1123,25 @@ const Admin: React.FC = () => {
                             price: product.price.toString(),
                             oldPrice: product.oldPrice?.toString() || '',
                             discount: product.discount?.toString() || '',
-                            couponDiscount: product.couponDiscount?.toString() || ''
+                            couponDiscount: product.couponDiscount?.toString() || '',
+                            productCouponCode: product.productCouponCode || '',
+                            productCouponDiscount: product.productCouponDiscount?.toString() || '',
+                            images: product.images || [],
+                            maxImages: product.maxImages?.toString() || '5',
+                            sizes: product.sizes || []
                           }); 
                         }}
                         className="flex-1 flex items-center justify-center space-x-2 bg-gray-100 text-gray-700 py-2 rounded-lg hover:bg-gray-200 transition-colors"
                       >
                         <Edit2 className="w-4 h-4" />
-                        <span>এডিট</span>
+                        <span>Edit</span>
                       </button>
                       <button
                         onClick={() => deleteProduct(product.id)}
                         className="flex-1 flex items-center justify-center space-x-2 bg-red-50 text-red-600 py-2 rounded-lg hover:bg-red-100 transition-colors"
                       >
                         <Trash2 className="w-4 h-4" />
-                        <span>ডিলিট</span>
+                        <span>Delete</span>
                       </button>
                     </div>
                   </div>
@@ -974,17 +1152,17 @@ const Admin: React.FC = () => {
         ) : activeTab === 'categories' ? (
           <div className="space-y-6">
             <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold">ক্যাটাগরি ({categories.length})</h2>
+              <h2 className="text-2xl font-bold">Categories ({categories.length})</h2>
               <button
                 onClick={() => {
                   setIsEditingCategory(null);
                   setCategoryData({ name: '', image: '' });
                   setShowCategoryForm(true);
                 }}
-                className="flex items-center space-x-2 bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition-colors"
+                className="flex items-center space-x-2 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
               >
                 <Plus className="w-5 h-5" />
-                <span>নতুন ক্যাটাগরি</span>
+                <span>New Category</span>
               </button>
             </div>
 
@@ -992,14 +1170,14 @@ const Admin: React.FC = () => {
               <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
                 <div className="bg-white rounded-2xl p-6 w-full max-w-md">
                   <div className="flex justify-between items-center mb-6">
-                    <h3 className="text-xl font-bold">{isEditingCategory ? 'ক্যাটাগরি এডিট করুন' : 'নতুন ক্যাটাগরি যোগ করুন'}</h3>
+                    <h3 className="text-xl font-bold">{isEditingCategory ? 'Edit Category' : 'Add New Category'}</h3>
                     <div className="flex space-x-3">
                       <button
                         type="button"
                         onClick={() => { setShowCategoryForm(false); setIsEditingCategory(null); }}
                         className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm"
                       >
-                        বাতিল
+                        Cancel
                       </button>
                       <button
                         onClick={() => {
@@ -1007,32 +1185,54 @@ const Admin: React.FC = () => {
                           if (btn) btn.click();
                         }}
                         disabled={isSaving}
-                        className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-50 text-sm font-bold"
+                        className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 text-sm font-bold"
                       >
-                        {isSaving ? 'সেভ হচ্ছে...' : 'সেভ করুন'}
+                        {isSaving ? 'Saving...' : 'Save'}
                       </button>
                     </div>
                   </div>
                   <form id="category-form" onSubmit={handleSaveCategory} className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">নাম</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
                       <input
                         type="text"
                         required
                         value={categoryData.name}
                         onChange={e => setCategoryData({ ...categoryData, name: e.target.value })}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">ইমেজ ইউআরএল (ঐচ্ছিক)</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Image URL (Optional)</label>
                       <input
                         type="text"
                         value={categoryData.image}
                         onChange={e => setCategoryData({ ...categoryData, image: e.target.value })}
-                        placeholder="ইমেজ না দিলে ডিফল্ট ইমেজ ব্যবহার হবে"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
+                        placeholder="Default image will be used if not provided"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
                       />
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Category Coupon Code</label>
+                        <input
+                          type="text"
+                          value={categoryData.categoryCouponCode}
+                          onChange={e => setCategoryData({ ...categoryData, categoryCouponCode: e.target.value })}
+                          placeholder="e.g. PROTHOM"
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Category Coupon Discount (%)</label>
+                        <input
+                          type="number"
+                          value={categoryData.categoryCouponDiscount}
+                          onChange={e => setCategoryData({ ...categoryData, categoryCouponDiscount: e.target.value })}
+                          placeholder="e.g. 10"
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
+                        />
+                      </div>
                     </div>
                     {/* Hidden submit button to allow triggering from outside */}
                     <button type="submit" id="category-form-submit-btn" className="hidden" />
@@ -1043,14 +1243,14 @@ const Admin: React.FC = () => {
                         onClick={() => { setShowCategoryForm(false); setIsEditingCategory(null); }}
                         className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
                       >
-                        বাতিল
+                        Cancel
                       </button>
                       <button
                         type="submit"
                         disabled={isSaving}
-                        className="px-6 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-50 font-bold"
+                        className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 font-bold"
                       >
-                        {isSaving ? 'সেভ হচ্ছে...' : 'সেভ করুন'}
+                        {isSaving ? 'Saving...' : 'Save'}
                       </button>
                     </div>
                   </form>
@@ -1065,12 +1265,20 @@ const Admin: React.FC = () => {
                     <img src={category.image} alt={category.name} className="w-16 h-16 object-cover rounded-xl" />
                     <div>
                       <h3 className="font-bold text-lg">{category.name}</h3>
-                      <p className="text-sm text-gray-500">স্লাগ: {category.slug}</p>
+                      <p className="text-sm text-gray-500">Slug: {category.slug}</p>
                     </div>
                   </div>
                   <div className="flex space-x-2">
                     <button
-                      onClick={() => { setIsEditingCategory(category); setCategoryData(category); }}
+                      onClick={() => { 
+                        setIsEditingCategory(category); 
+                        setCategoryData({ 
+                          name: category.name, 
+                          image: category.image,
+                          categoryCouponCode: category.categoryCouponCode || '',
+                          categoryCouponDiscount: category.categoryCouponDiscount?.toString() || ''
+                        }); 
+                      }}
                       className="p-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
                     >
                       <Edit2 className="w-5 h-5" />
@@ -1089,48 +1297,48 @@ const Admin: React.FC = () => {
         ) : activeTab === 'sliders' ? (
           <div className="space-y-6">
             <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold">স্লাইডার ({sliders.length})</h2>
+              <h2 className="text-2xl font-bold">Sliders ({sliders.length})</h2>
               <button
                 onClick={() => setShowSliderForm(true)}
-                className="flex items-center space-x-2 bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition-colors"
+                className="flex items-center space-x-2 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
               >
                 <Plus className="w-5 h-5" />
-                <span>নতুন স্লাইডার</span>
+                <span>New Slider</span>
               </button>
             </div>
 
             {(showSliderForm || isEditingSlider) && (
               <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
                 <div className="bg-white rounded-2xl p-6 w-full max-w-md">
-                  <h3 className="text-xl font-bold mb-4">{isEditingSlider ? 'স্লাইডার এডিট করুন' : 'নতুন স্লাইডার যোগ করুন'}</h3>
+                  <h3 className="text-xl font-bold mb-4">{isEditingSlider ? 'Edit Slider' : 'Add New Slider'}</h3>
                   <form onSubmit={handleSaveSlider} className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">ডেস্কটপ ইমেজ ইউআরএল</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Desktop Image URL</label>
                       <input
                         type="text"
                         required
                         value={sliderData.image}
                         onChange={e => setSliderData({ ...sliderData, image: e.target.value })}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">মোবাইল ইমেজ ইউআরএল (ঐচ্ছিক)</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Mobile Image URL (Optional)</label>
                       <input
                         type="text"
                         value={sliderData.mobileImage}
                         onChange={e => setSliderData({ ...sliderData, mobileImage: e.target.value })}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">লিঙ্ক (ঐচ্ছিক)</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Link (Optional)</label>
                       <input
                         type="text"
                         value={sliderData.link}
                         onChange={e => setSliderData({ ...sliderData, link: e.target.value })}
                         placeholder="/category/panjabi"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
                       />
                     </div>
                     <div className="flex justify-end space-x-3 pt-4">
@@ -1139,14 +1347,14 @@ const Admin: React.FC = () => {
                         onClick={() => { setShowSliderForm(false); setIsEditingSlider(null); }}
                         className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
                       >
-                        বাতিল
+                        Cancel
                       </button>
                       <button
                         type="submit"
                         disabled={isSaving}
-                        className="px-6 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-50"
+                        className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
                       >
-                        {isSaving ? 'সেভ হচ্ছে...' : 'সেভ করুন'}
+                        {isSaving ? 'Saving...' : 'Save'}
                       </button>
                     </div>
                   </form>
@@ -1159,21 +1367,21 @@ const Admin: React.FC = () => {
                 <div key={slider.id} className="bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
                   <img src={slider.image} alt="Slider" className="w-full h-48 object-cover" />
                   <div className="p-4">
-                    <p className="text-sm text-gray-500 mb-4 truncate">লিঙ্ক: {slider.link || 'নেই'}</p>
+                    <p className="text-sm text-gray-500 mb-4 truncate">Link: {slider.link || 'None'}</p>
                     <div className="flex space-x-2">
                       <button
                         onClick={() => { setIsEditingSlider(slider); setSliderData(slider); }}
                         className="flex-1 flex items-center justify-center space-x-2 bg-gray-100 text-gray-700 py-2 rounded-lg hover:bg-gray-200 transition-colors"
                       >
                         <Edit2 className="w-4 h-4" />
-                        <span>এডিট</span>
+                        <span>Edit</span>
                       </button>
                       <button
                         onClick={() => deleteSlider(slider.id)}
                         className="flex-1 flex items-center justify-center space-x-2 bg-red-50 text-red-600 py-2 rounded-lg hover:bg-red-100 transition-colors"
                       >
                         <Trash2 className="w-4 h-4" />
-                        <span>ডিলিট</span>
+                        <span>Delete</span>
                       </button>
                     </div>
                   </div>
@@ -1184,17 +1392,17 @@ const Admin: React.FC = () => {
         ) : activeTab === 'coupons' ? (
           <div className="space-y-6">
             <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold">কুপন কোডসমূহ ({coupons.length})</h2>
+              <h2 className="text-2xl font-bold">Coupon Codes ({coupons.length})</h2>
               <button
                 onClick={() => {
                   setIsEditingCoupon(null);
                   setCouponData({ code: '', discount: '', type: 'percentage' });
                   setShowCouponForm(true);
                 }}
-                className="flex items-center space-x-2 bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition-colors"
+                className="flex items-center space-x-2 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
               >
                 <Plus className="w-5 h-5" />
-                <span>নতুন কুপন</span>
+                <span>New Coupon</span>
               </button>
             </div>
 
@@ -1202,43 +1410,43 @@ const Admin: React.FC = () => {
               <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
                 <div className="bg-white rounded-2xl p-6 w-full max-w-md">
                   <div className="flex justify-between items-center mb-6">
-                    <h3 className="text-xl font-bold">{isEditingCoupon ? 'কুপন এডিট করুন' : 'নতুন কুপন যোগ করুন'}</h3>
+                    <h3 className="text-xl font-bold">{isEditingCoupon ? 'Edit Coupon' : 'Add New Coupon'}</h3>
                     <button onClick={() => { setShowCouponForm(false); setIsEditingCoupon(null); }} className="text-gray-400 hover:text-gray-600">
                       <XCircle className="w-6 h-6" />
                     </button>
                   </div>
                   <form onSubmit={handleSaveCoupon} className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">কুপন কোড</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Coupon Code</label>
                       <input
                         type="text"
                         required
-                        placeholder="যেমন: SAVE10"
+                        placeholder="e.g. SAVE10"
                         value={couponData.code}
                         onChange={e => setCouponData({ ...couponData, code: e.target.value })}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none uppercase"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none uppercase"
                       />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">ডিসকাউন্ট টাইপ</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Discount Type</label>
                         <select
                           value={couponData.type}
                           onChange={e => setCouponData({ ...couponData, type: e.target.value as 'percentage' | 'fixed' })}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
                         >
-                          <option value="percentage">পার্সেন্টেজ (%)</option>
-                          <option value="fixed">ফিক্সড (Tk)</option>
+                          <option value="percentage">Percentage (%)</option>
+                          <option value="fixed">Fixed (Tk)</option>
                         </select>
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">ডিসকাউন্ট পরিমাণ</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Discount Amount</label>
                         <input
                           type="number"
                           required
                           value={couponData.discount}
                           onChange={e => setCouponData({ ...couponData, discount: e.target.value })}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
                         />
                       </div>
                     </div>
@@ -1248,14 +1456,14 @@ const Admin: React.FC = () => {
                         onClick={() => { setShowCouponForm(false); setIsEditingCoupon(null); }}
                         className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
                       >
-                        বাতিল
+                        Cancel
                       </button>
                       <button
                         type="submit"
                         disabled={isSaving}
-                        className="px-6 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-50 font-bold"
+                        className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 font-bold"
                       >
-                        {isSaving ? 'সেভ হচ্ছে...' : 'সেভ করুন'}
+                        {isSaving ? 'Saving...' : 'Save'}
                       </button>
                     </div>
                   </form>
@@ -1268,9 +1476,9 @@ const Admin: React.FC = () => {
                 <div key={coupon.id} className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
                   <div className="flex justify-between items-start mb-4">
                     <div>
-                      <h3 className="text-xl font-bold text-emerald-600">{coupon.code}</h3>
+                      <h3 className="text-xl font-bold text-red-600">{coupon.code}</h3>
                       <p className="text-sm text-gray-500">
-                        ডিসকাউন্ট: {coupon.discount}{coupon.type === 'percentage' ? '%' : ' Tk'}
+                        Discount: {coupon.discount}{coupon.type === 'percentage' ? '%' : ' Tk'}
                       </p>
                     </div>
                     <div className="flex space-x-2">
@@ -1295,13 +1503,13 @@ const Admin: React.FC = () => {
         ) : activeTab === 'users' ? (
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-              <h2 className="text-2xl font-bold">ইউজার্স ({users.length})</h2>
+              <h2 className="text-2xl font-bold">Users ({users.length})</h2>
               <button
                 onClick={generateUsersReportPDF}
-                className="w-full sm:w-auto flex items-center justify-center space-x-2 bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition-colors"
+                className="w-full sm:w-auto flex items-center justify-center space-x-2 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
               >
                 <FileText className="w-5 h-5" />
-                <span>ইউজার রিপোর্ট (PDF)</span>
+                <span>User Report (PDF)</span>
               </button>
             </div>
 
@@ -1321,7 +1529,7 @@ const Admin: React.FC = () => {
                         {user.photoURL ? (
                           <img src={user.photoURL} alt={user.name} className="w-14 h-14 rounded-full object-cover" />
                         ) : (
-                          <div className="w-14 h-14 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-600 font-bold text-xl">
+                          <div className="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center text-red-600 font-bold text-xl">
                             {user.name?.charAt(0) || 'U'}
                           </div>
                         )}
@@ -1334,27 +1542,27 @@ const Admin: React.FC = () => {
 
                       <div className="grid grid-cols-2 lg:flex lg:items-center gap-4 lg:gap-8">
                         <div className="bg-gray-50 p-3 rounded-xl lg:bg-transparent lg:p-0">
-                          <p className="text-xs text-gray-400 uppercase font-bold tracking-wider mb-1">অর্ডার</p>
-                          <p className="font-bold text-lg">{userOrders.length} টি</p>
+                          <p className="text-xs text-gray-400 uppercase font-bold tracking-wider mb-1">Orders</p>
+                          <p className="font-bold text-lg">{userOrders.length}</p>
                         </div>
                         <div className="bg-gray-50 p-3 rounded-xl lg:bg-transparent lg:p-0">
-                          <p className="text-xs text-gray-400 uppercase font-bold tracking-wider mb-1">মোট অর্ডার</p>
+                          <p className="text-xs text-gray-400 uppercase font-bold tracking-wider mb-1">Total Ordered</p>
                           <p className="font-bold text-lg text-gray-600">Tk {totalOrdered}</p>
                         </div>
                         <div className="bg-gray-50 p-3 rounded-xl lg:bg-transparent lg:p-0">
-                          <p className="text-xs text-gray-400 uppercase font-bold tracking-wider mb-1">মোট খরচ</p>
-                          <p className="font-bold text-lg text-emerald-600">Tk {totalSpent}</p>
+                          <p className="text-xs text-gray-400 uppercase font-bold tracking-wider mb-1">Total Spent</p>
+                          <p className="font-bold text-lg text-red-600">Tk {totalSpent}</p>
                         </div>
                         <div className="bg-gray-50 p-3 rounded-xl lg:bg-transparent lg:p-0">
-                          <p className="text-xs text-gray-400 uppercase font-bold tracking-wider mb-1">বাতিল ব্যালেন্স</p>
+                          <p className="text-xs text-gray-400 uppercase font-bold tracking-wider mb-1">Cancelled</p>
                           <p className="font-bold text-lg text-red-600">Tk {cancelledAmount}</p>
                         </div>
                         <div className="bg-gray-50 p-3 rounded-xl lg:bg-transparent lg:p-0">
-                          <p className="text-xs text-gray-400 uppercase font-bold tracking-wider mb-1">স্ট্যাটাস</p>
+                          <p className="text-xs text-gray-400 uppercase font-bold tracking-wider mb-1">Status</p>
                           <span className={`px-3 py-1 rounded-full text-xs font-medium inline-block ${
-                            user.isBanned ? 'bg-red-100 text-red-600' : 'bg-emerald-100 text-emerald-600'
+                            user.isBanned ? 'bg-red-100 text-red-600' : 'bg-red-100 text-red-600'
                           }`}>
-                            {user.isBanned ? 'ব্যানড' : 'অ্যাক্টিভ'}
+                            {user.isBanned ? 'Banned' : 'Active'}
                           </span>
                         </div>
                       </div>
@@ -1362,35 +1570,35 @@ const Admin: React.FC = () => {
                       <div className="flex items-center space-x-2 pt-4 lg:pt-0 border-t lg:border-t-0 border-gray-50">
                         <button
                           onClick={() => generateUserOrdersPDF(user, userOrders)}
-                          className="flex-1 lg:flex-none flex items-center justify-center space-x-2 px-4 py-2 bg-emerald-50 text-emerald-600 rounded-lg hover:bg-emerald-100 transition-colors"
-                          title="ইউজার রিপোর্ট ডাউনলোড"
+                          className="flex-1 lg:flex-none flex items-center justify-center space-x-2 px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors"
+                          title="Download User Report"
                         >
                           <Download className="w-5 h-5" />
-                          <span className="lg:hidden">রিপোর্ট</span>
+                          <span className="lg:hidden">Report</span>
                         </button>
                         <button
                           onClick={() => banUser(user.uid, !user.isBanned)}
                           className={`flex-1 lg:flex-none flex items-center justify-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
                             user.isBanned 
-                            ? 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100' 
+                            ? 'bg-red-50 text-red-600 hover:bg-red-100' 
                             : 'bg-amber-50 text-amber-600 hover:bg-amber-100'
                           }`}
-                          title={user.isBanned ? 'আনব্যান করুন' : 'ব্যান করুন'}
+                          title={user.isBanned ? 'Unban' : 'Ban'}
                         >
                           {user.isBanned ? <UserCheck className="w-5 h-5" /> : <Ban className="w-5 h-5" />}
-                          <span className="lg:hidden">{user.isBanned ? 'আনব্যান' : 'ব্যান'}</span>
+                          <span className="lg:hidden">{user.isBanned ? 'Unban' : 'Ban'}</span>
                         </button>
                         <button
                           onClick={() => {
-                            if (window.confirm('আপনি কি নিশ্চিত যে আপনি এই ইউজারকে ডিলিট করতে চান?')) {
+                            if (window.confirm('Are you sure you want to delete this user?')) {
                               deleteUser(user.uid);
                             }
                           }}
                           className="flex-1 lg:flex-none flex items-center justify-center space-x-2 px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors"
-                          title="ইউজার ডিলিট"
+                          title="Delete User"
                         >
                           <Trash2 className="w-5 h-5" />
-                          <span className="lg:hidden">ডিলিট</span>
+                          <span className="lg:hidden">Delete</span>
                         </button>
                       </div>
                     </div>
@@ -1402,14 +1610,14 @@ const Admin: React.FC = () => {
         ) : activeTab === 'reviews' ? (
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <h2 className="text-2xl font-bold text-gray-800">কাস্টমার রিভিউ ({reviews.length})</h2>
+              <h2 className="text-2xl font-bold text-gray-800">Customer Reviews ({reviews.length})</h2>
             </div>
 
             <div className="grid grid-cols-1 gap-6">
               {reviews.length === 0 ? (
                 <div className="bg-white p-12 rounded-3xl text-center border border-gray-100">
                   <Star className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                  <p className="text-gray-500">এখনো কোনো রিভিউ নেই।</p>
+                  <p className="text-gray-500">No reviews yet.</p>
                 </div>
               ) : (
                 reviews.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).map(review => {
@@ -1420,7 +1628,7 @@ const Admin: React.FC = () => {
                         <div className="flex-1">
                           <div className="flex items-center justify-between mb-4">
                             <div className="flex items-center space-x-3">
-                              <div className="w-12 h-12 rounded-full overflow-hidden border border-emerald-100 flex items-center justify-center bg-emerald-50 text-emerald-600 font-bold">
+                              <div className="w-12 h-12 rounded-full overflow-hidden border border-red-100 flex items-center justify-center bg-red-50 text-red-600 font-bold">
                                 {review.userPhoto ? (
                                   <img src={review.userPhoto} alt={review.userName} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                                 ) : (
@@ -1434,14 +1642,14 @@ const Admin: React.FC = () => {
                                     <Star key={i} className={`w-3 h-3 ${i < review.rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`} />
                                   ))}
                                   <span className="text-xs text-gray-400 ml-2">
-                                    {new Date(review.createdAt).toLocaleDateString('bn-BD')}
+                                    {new Date(review.createdAt).toLocaleDateString()}
                                   </span>
                                 </div>
                               </div>
                             </div>
                             <button 
                               onClick={() => {
-                                if (window.confirm('আপনি কি নিশ্চিত যে আপনি এই রিভিউটি ডিলিট করতে চান?')) {
+                                if (window.confirm('Are you sure you want to delete this review?')) {
                                   deleteReview(review.productId, review.id);
                                 }
                               }}
@@ -1452,19 +1660,19 @@ const Admin: React.FC = () => {
                           </div>
 
                           <div className="mb-4">
-                            <p className="text-sm font-medium text-emerald-600 mb-1">প্রোডাক্ট: {product?.name || 'অজানা প্রোডাক্ট'}</p>
+                            <p className="text-sm font-medium text-red-600 mb-1">Product: {product?.name || 'Unknown Product'}</p>
                             <p className="text-gray-600 leading-relaxed">{review.comment}</p>
                           </div>
 
                           {review.adminReply ? (
-                            <div className="bg-emerald-50 p-4 rounded-2xl border border-emerald-100">
+                            <div className="bg-red-50 p-4 rounded-2xl border border-red-100">
                               <div className="flex items-center justify-between mb-2">
-                                <p className="text-xs font-bold text-emerald-700">আপনার রিপ্লাই</p>
-                                <span className="text-[10px] text-emerald-400">
-                                  {review.adminReplyAt && new Date(review.adminReplyAt).toLocaleDateString('bn-BD')}
+                                <p className="text-xs font-bold text-red-700">Your Reply</p>
+                                <span className="text-[10px] text-red-400">
+                                  {review.adminReplyAt && new Date(review.adminReplyAt).toLocaleDateString()}
                                 </span>
                               </div>
-                              <p className="text-sm text-emerald-800 italic">{review.adminReply}</p>
+                              <p className="text-sm text-red-800 italic">{review.adminReply}</p>
                             </div>
                           ) : (
                             <div className="flex items-center space-x-2">
@@ -1472,8 +1680,8 @@ const Admin: React.FC = () => {
                                 type="text"
                                 value={replyText[review.id] || ''}
                                 onChange={(e) => setReplyText({ ...replyText, [review.id]: e.target.value })}
-                                placeholder="রিপ্লাই লিখুন..."
-                                className="flex-1 px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none text-sm"
+                                placeholder="Write a reply..."
+                                className="flex-1 px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 outline-none text-sm"
                               />
                               <button
                                 onClick={() => {
@@ -1482,7 +1690,7 @@ const Admin: React.FC = () => {
                                     setReplyText({ ...replyText, [review.id]: '' });
                                   }
                                 }}
-                                className="p-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-all"
+                                className="p-2 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-all"
                               >
                                 <Send className="w-5 h-5" />
                               </button>
@@ -1505,78 +1713,149 @@ const Admin: React.FC = () => {
         ) : (
           <div className="space-y-6">
             <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold">সেটিংস</h2>
+              <h2 className="text-2xl font-bold">Settings</h2>
               <button
                 onClick={() => {
                   const form = document.getElementById('settings-form') as HTMLFormElement;
                   if (form) form.requestSubmit();
                 }}
-                className="bg-emerald-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-200"
+                className="bg-red-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-red-700 transition-all shadow-lg shadow-red-200"
               >
-                সেটিংস সেভ করুন
+                Save Settings
               </button>
             </div>
             <div className="bg-white rounded-2xl border border-gray-100 p-8 max-w-2xl shadow-sm">
-              <form id="settings-form" onSubmit={(e) => { e.preventDefault(); alert('সেটিংস সেভ হয়েছে!'); }} className="space-y-6">
+              <form id="settings-form" onSubmit={(e) => { e.preventDefault(); alert('Settings saved!'); }} className="space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">কোম্পানির নাম</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Company Name</label>
                   <input
                     type="text"
                     value={settings.companyName || ''}
                     onChange={e => updateSettings({ ...settings, companyName: e.target.value })}
                     placeholder="TSB SHOP BD"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">ওয়েবসাইট লোগো (লিঙ্ক)</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Website Logo (Link)</label>
                   <input
                     type="text"
                     value={settings.logo || ''}
                     onChange={e => updateSettings({ ...settings, logo: e.target.value })}
                     placeholder="https://example.com/logo.png"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
                   />
-                  <p className="text-xs text-gray-400 mt-1">লোগো পরিবর্তনের জন্য একটি সরাসরি ইমেজ লিঙ্ক দিন।</p>
+                  <p className="text-xs text-gray-400 mt-1">Provide a direct image link to change the logo.</p>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">শিপিং চার্জ (ঢাকার ভিতরে)</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Shipping Charge (Inside Dhaka)</label>
                     <input
                       type="number"
                       value={settings.shippingCharge || 60}
                       onChange={e => updateSettings({ ...settings, shippingCharge: Number(e.target.value) })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">শিপিং চার্জ (ঢাকার বাহিরে)</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Shipping Charge (Outside Dhaka)</label>
                     <input
                       type="number"
                       value={settings.shippingChargeOutside || 120}
                       onChange={e => updateSettings({ ...settings, shippingChargeOutside: Number(e.target.value) })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">হোয়াটসঅ্যাপ নম্বর</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">WhatsApp Number</label>
                   <input
                     type="text"
                     value={settings.whatsappNumber}
                     onChange={e => updateSettings({ ...settings, whatsappNumber: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">স্লাইডারের নিচের টাইটেল</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Slider Subtitle</label>
                   <input
                     type="text"
                     value={settings.sliderTitle || ''}
                     onChange={e => updateSettings({ ...settings, sliderTitle: e.target.value })}
-                    placeholder="যেমন: আমাদের নতুন কালেকশন"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
+                    placeholder="e.g., Our New Collection"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
                   />
+                </div>
+
+                <div className="border-t pt-6 mt-6">
+                  <h3 className="text-lg font-bold mb-4">Notice Bar Settings</h3>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                      <div>
+                        <p className="font-bold text-gray-800">Show Notice Bar</p>
+                        <p className="text-xs text-gray-500">Enable or disable the top notice bar</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => updateSettings({ ...settings, showNotice: !settings.showNotice })}
+                        className={`w-14 h-8 rounded-full transition-all relative ${settings.showNotice ? 'bg-red-600' : 'bg-gray-300'}`}
+                      >
+                        <div className={`absolute top-1 w-6 h-6 bg-white rounded-full transition-all ${settings.showNotice ? 'left-7' : 'left-1'}`} />
+                      </button>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Notice Text</label>
+                      <textarea
+                        rows={2}
+                        value={settings.noticeText || ''}
+                        onChange={e => updateSettings({ ...settings, noticeText: e.target.value })}
+                        placeholder="e.g., Welcome to TM SHOP BD! Enjoy your shopping."
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="border-t pt-6 mt-6">
+                  <h3 className="text-lg font-bold mb-4">Payment Settings</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">bKash Number</label>
+                      <input
+                        type="text"
+                        value={settings.bkashNumber || ''}
+                        onChange={e => updateSettings({ ...settings, bkashNumber: e.target.value })}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Nagad Number</label>
+                      <input
+                        type="text"
+                        value={settings.nagadNumber || ''}
+                        onChange={e => updateSettings({ ...settings, nagadNumber: e.target.value })}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Rocket Number</label>
+                      <input
+                        type="text"
+                        value={settings.rocketNumber || ''}
+                        onChange={e => updateSettings({ ...settings, rocketNumber: e.target.value })}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Advance Payment (%)</label>
+                      <input
+                        type="number"
+                        value={settings.advancePaymentPercentage || 0}
+                        onChange={e => updateSettings({ ...settings, advancePaymentPercentage: Number(e.target.value) })}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
+                      />
+                    </div>
+                  </div>
                 </div>
               </form>
             </div>

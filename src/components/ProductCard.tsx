@@ -53,7 +53,7 @@ export default function ProductCard({ product }: ProductCardProps) {
             <span className="bg-green-600 text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase">New</span>
           )}
           {product.discount && (
-            <span className="bg-emerald-600 text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase">-{product.discount}%</span>
+            <span className="bg-red-600 text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase">-{product.discount}%</span>
           )}
         </div>
 
@@ -64,7 +64,7 @@ export default function ProductCard({ product }: ProductCardProps) {
             className={`p-2 rounded-full transition-all duration-300 shadow-sm ${
               isInWishlist(product.id) 
                 ? 'bg-red-500 text-white' 
-                : 'bg-white/80 backdrop-blur-sm text-emerald-600 hover:bg-emerald-600 hover:text-white'
+                : 'bg-white/80 backdrop-blur-sm text-red-600 hover:bg-red-600 hover:text-white'
             }`}
           >
             <Heart size={18} fill={isInWishlist(product.id) ? "currentColor" : "none"} />
@@ -72,7 +72,7 @@ export default function ProductCard({ product }: ProductCardProps) {
           
           <button 
             onClick={handleAddToCart}
-            className="p-2 bg-white/80 backdrop-blur-sm rounded-full text-emerald-600 hover:bg-emerald-600 hover:text-white transition-all duration-300 shadow-sm"
+            className="p-2 bg-white/80 backdrop-blur-sm rounded-full text-red-600 hover:bg-red-600 hover:text-white transition-all duration-300 shadow-sm"
           >
             <ShoppingCart size={18} />
           </button>
@@ -82,7 +82,7 @@ export default function ProductCard({ product }: ProductCardProps) {
         <div className="absolute bottom-0 left-0 right-0 p-3 translate-y-full group-hover:translate-y-0 transition-transform duration-300 bg-gradient-to-t from-black/60 to-transparent">
           <button 
             onClick={handleAddToCart}
-            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded flex items-center justify-center space-x-2 text-sm font-bold transition-colors"
+            className="w-full bg-red-600 hover:bg-red-700 text-white py-2 rounded flex items-center justify-center space-x-2 text-sm font-bold transition-colors"
           >
             <ShoppingCart size={16} />
             <span>Add to Cart</span>
@@ -92,12 +92,12 @@ export default function ProductCard({ product }: ProductCardProps) {
 
       <div className="p-3 text-center">
         <Link to={`/product/${product.slug}`} className="block mb-1">
-          <h3 className="text-xs lg:text-sm font-medium text-gray-900 hover:text-emerald-600 transition-colors line-clamp-1">
+          <h3 className="text-xs lg:text-sm font-medium text-gray-900 hover:text-red-600 transition-colors line-clamp-1">
             {product.name}
           </h3>
         </Link>
         <div className="flex items-center justify-center space-x-2">
-          <span className="text-base font-bold text-emerald-600">Tk {product.price}</span>
+          <span className="text-base font-bold text-red-600">Tk {product.price}</span>
           {product.oldPrice && (
             <span className="text-xs text-gray-400 line-through">Tk {product.oldPrice}</span>
           )}

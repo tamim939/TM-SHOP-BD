@@ -26,16 +26,16 @@ export default function Home() {
       <Hero />
       
       {/* Notice Bar */}
-      <div className="bg-emerald-600 py-2 overflow-hidden relative">
+      <div className="bg-red-600 py-2 overflow-hidden relative">
         <div className="whitespace-nowrap animate-marquee inline-block">
           <span className="text-sm md:text-base font-bold text-white px-12">
-            {settings.sliderTitle || 'আমাদের নতুন কালেকশন দেখতে পারেন!'}
+            {settings.sliderTitle || 'Check out our new collection!'}
           </span>
           <span className="text-sm md:text-base font-bold text-white px-12">
-            {settings.sliderTitle || 'আমাদের নতুন কালেকশন দেখতে পারেন!'}
+            {settings.sliderTitle || 'Check out our new collection!'}
           </span>
           <span className="text-sm md:text-base font-bold text-white px-12">
-            {settings.sliderTitle || 'আমাদের নতুন কালেকশন দেখতে পারেন!'}
+            {settings.sliderTitle || 'Check out our new collection!'}
           </span>
         </div>
       </div>
@@ -58,13 +58,13 @@ export default function Home() {
               <div className="mb-8 flex items-center justify-between">
                 <div>
                   <h2 className="text-2xl font-bold uppercase tracking-tight text-gray-900">{category.name}</h2>
-                  <div className="w-12 h-1 bg-emerald-600 mt-2"></div>
+                  <div className="w-12 h-1 bg-red-600 mt-2"></div>
                 </div>
                 <Link 
                   to={`/category/${category.slug}`} 
-                  className="text-emerald-600 font-bold flex items-center space-x-1 hover:underline text-sm"
+                  className="text-red-600 font-bold flex items-center space-x-1 hover:underline text-sm"
                 >
-                  <span>সব দেখুন</span>
+                  <span>View All</span>
                   <ArrowRight size={16} />
                 </Link>
               </div>
@@ -85,31 +85,31 @@ export default function Home() {
       <section className="py-12 bg-white">
         <div className="container">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="flex items-center space-x-4 p-6 bg-emerald-50 rounded-2xl">
-              <div className="bg-emerald-600 p-3 rounded-xl text-white">
+            <div className="flex items-center space-x-4 p-6 bg-red-50 rounded-2xl">
+              <div className="bg-red-600 p-3 rounded-xl text-white">
                 <Truck size={24} />
               </div>
               <div>
-                <h3 className="font-bold">ফাস্ট ডেলিভারি</h3>
-                <p className="text-sm text-gray-500">সারা বাংলাদেশে হোম ডেলিভারি</p>
+                <h3 className="font-bold">Fast Delivery</h3>
+                <p className="text-sm text-gray-500">Home delivery all over Bangladesh</p>
               </div>
             </div>
-            <div className="flex items-center space-x-4 p-6 bg-blue-50 rounded-2xl">
-              <div className="bg-blue-600 p-3 rounded-xl text-white">
+            <div className="flex items-center space-x-4 p-6 bg-red-50 rounded-2xl">
+              <div className="bg-red-600 p-3 rounded-xl text-white">
                 <Shield size={24} />
               </div>
               <div>
-                <h3 className="font-bold">নিরাপদ পেমেন্ট</h3>
-                <p className="text-sm text-gray-500">ক্যাশ অন ডেলিভারি সুবিধা</p>
+                <h3 className="font-bold">Secure Payment</h3>
+                <p className="text-sm text-gray-500">Cash on delivery available</p>
               </div>
             </div>
-            <div className="flex items-center space-x-4 p-6 bg-amber-50 rounded-2xl">
-              <div className="bg-amber-600 p-3 rounded-xl text-white">
+            <div className="flex items-center space-x-4 p-6 bg-red-50 rounded-2xl">
+              <div className="bg-red-600 p-3 rounded-xl text-white">
                 <Star size={24} />
               </div>
               <div>
-                <h3 className="font-bold">সেরা কোয়ালিটি</h3>
-                <p className="text-sm text-gray-500">১০০% অরিজিনাল প্রোডাক্ট</p>
+                <h3 className="font-bold">Best Quality</h3>
+                <p className="text-sm text-gray-500">100% Original Products</p>
               </div>
             </div>
           </div>

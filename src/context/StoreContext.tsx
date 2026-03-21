@@ -62,6 +62,7 @@ interface StoreContextType {
   deleteCoupon: (id: string) => Promise<void>;
   addOrder: (order: Omit<Order, 'id'>) => Promise<void>;
   updateOrderStatus: (orderId: string, status: Order['status']) => Promise<void>;
+  verifyPayment: (orderId: string, status: Order['paymentStatus']) => Promise<void>;
   deleteOrder: (orderId: string) => Promise<void>;
   addReview: (review: Omit<Review, 'id' | 'createdAt'>) => Promise<void>;
   deleteReview: (productId: string, reviewId: string) => Promise<void>;
@@ -110,11 +111,17 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     whatsappNumber: '01909338635',
     whatsappMessage: 'Hello',
     messengerLink: 'https://m.me/yourpage',
-    sliderTitle: 'আমাদের নতুন কালেকশন',
+    sliderTitle: 'Our New Collection',
     logo: '',
-    companyName: 'TSB SHOP BD',
+    companyName: 'TM SHOP BD',
     shippingCharge: 60,
-    shippingChargeOutside: 120
+    shippingChargeOutside: 120,
+    bkashNumber: '01918987804',
+    nagadNumber: '01918987804',
+    rocketNumber: '01918987804',
+    advancePaymentPercentage: 70,
+    showNotice: true,
+    noticeText: 'Welcome to TM SHOP BD! Enjoy your shopping.'
   });
   const [user, setUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
@@ -658,6 +665,16 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   };
 
+  const verifyPayment = async (orderId: string, status: Order['paymentStatus']) => {
+    try {
+      const orderRef = ref(db, `orders/${orderId}`);
+      await update(orderRef, { paymentStatus: status });
+    } catch (error) {
+      console.error("Error verifying payment:", error);
+      throw error;
+    }
+  };
+
   const deleteOrder = async (orderId: string) => {
     try {
       const orderRef = ref(db, `orders/${orderId}`);
@@ -787,7 +804,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const isInWishlist = (productId: string) => wishlist.includes(productId);
 
-  const isAppReady = settingsLoaded && productsLoaded && categoriesLoaded && slidersLoaded && !authLoading;
+  const isAppReady = (settingsLoaded && productsLoaded && categoriesLoaded && slidersLoaded && !authLoading) || (productsLoaded && categoriesLoaded && !authLoading);
 
   return (
     <StoreContext.Provider value={{ 
@@ -819,6 +836,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       deleteCoupon,
       addOrder, 
       updateOrderStatus,
+      verifyPayment,
       deleteOrder,
       addReview,
       deleteReview,

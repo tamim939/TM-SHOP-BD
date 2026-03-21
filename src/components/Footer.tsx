@@ -24,7 +24,7 @@ export default function Footer() {
 
         {/* Social Media */}
         <div className="text-center mb-12">
-          <h3 className="text-xl font-bold mb-2">সোশ্যাল মিডিয়া</h3>
+          <h3 className="text-xl font-bold mb-2">Social Media</h3>
           <div className="w-12 h-1 bg-gray-700 mx-auto mb-6"></div>
           <div className="flex justify-center gap-3">
             <a href="#" className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-blue-600 transition-colors">
@@ -50,7 +50,7 @@ export default function Footer() {
 
         {/* Payment Gateway */}
         <div className="text-center mb-12">
-          <h3 className="text-lg font-bold mb-2">নিরাপদ পেমেন্ট গেটওয়ে</h3>
+          <h3 className="text-lg font-bold mb-2">Secure Payment Gateway</h3>
           <div className="w-12 h-1 bg-gray-700 mx-auto mb-6"></div>
           <div className="max-w-md mx-auto">
             <img 
@@ -64,7 +64,7 @@ export default function Footer() {
 
         {/* Copyright & Developer */}
         <div className="text-center space-y-2 text-gray-400 text-sm border-t border-white/5 pt-8">
-          <p>© 2026 TSB SHOP BD. সর্বস্বত্ব সংরক্ষিত।</p>
+          <p>© 2026 TSB SHOP BD. All rights reserved.</p>
           <p>Developed by: <span className="text-yellow-500">TSB SHOP BD Team</span></p>
         </div>
       </div>

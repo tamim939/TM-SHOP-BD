@@ -48,13 +48,13 @@ export default function AuthModal({ onSuccess }: AuthModalProps) {
   return (
     <div className="bg-white p-8 rounded-2xl shadow-sm max-w-md w-full">
       <h2 className="text-2xl font-bold mb-6 text-center">
-        {isLogin ? 'লগইন করুন' : 'অ্যাকাউন্ট তৈরি করুন'}
+        {isLogin ? 'Login' : 'Create Account'}
       </h2>
       
       <form onSubmit={handleSubmit} className="space-y-4">
         {!isLogin && (
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">নাম</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
             <div className="relative">
               <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
               <input 
@@ -62,15 +62,15 @@ export default function AuthModal({ onSuccess }: AuthModalProps) {
                 required
                 value={name}
                 onChange={e => setName(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none"
-                placeholder="আপনার নাম"
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 outline-none"
+                placeholder="Your Name"
               />
             </div>
           </div>
         )}
         
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">ইমেইল</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
           <div className="relative">
             <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
             <input 
@@ -78,14 +78,14 @@ export default function AuthModal({ onSuccess }: AuthModalProps) {
               required
               value={email}
               onChange={e => setEmail(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none"
+              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 outline-none"
               placeholder="example@mail.com"
             />
           </div>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">পাসওয়ার্ড</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
           <div className="relative">
             <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
             <input 
@@ -93,7 +93,7 @@ export default function AuthModal({ onSuccess }: AuthModalProps) {
               required
               value={password}
               onChange={e => setPassword(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none"
+              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 outline-none"
               placeholder="••••••••"
             />
           </div>
@@ -104,9 +104,9 @@ export default function AuthModal({ onSuccess }: AuthModalProps) {
         <button 
           type="submit"
           disabled={loading}
-          className="w-full bg-emerald-600 text-white py-3 rounded-xl font-bold hover:bg-emerald-700 transition-colors flex items-center justify-center space-x-2 disabled:opacity-50"
+          className="w-full bg-red-600 text-white py-3 rounded-xl font-bold hover:bg-red-700 transition-colors flex items-center justify-center space-x-2 disabled:opacity-50"
         >
-          <span>{loading ? 'অপেক্ষা করুন...' : (isLogin ? 'লগইন' : 'সাইন আপ')}</span>
+          <span>{loading ? 'Please wait...' : (isLogin ? 'Login' : 'Sign Up')}</span>
           {!loading && <ArrowRight size={20} />}
         </button>
       </form>
@@ -114,9 +114,9 @@ export default function AuthModal({ onSuccess }: AuthModalProps) {
       <div className="mt-6 text-center">
         <button 
           onClick={() => setIsLogin(!isLogin)}
-          className="text-emerald-600 font-medium hover:underline"
+          className="text-red-600 font-medium hover:underline"
         >
-          {isLogin ? 'নতুন অ্যাকাউন্ট তৈরি করতে চান? সাইন আপ করুন' : 'ইতিমধ্যে অ্যাকাউন্ট আছে? লগইন করুন'}
+          {isLogin ? "Don't have an account? Sign Up" : 'Already have an account? Login'}
         </button>
       </div>
     </div>

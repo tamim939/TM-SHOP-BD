@@ -5,23 +5,17 @@ import { Trash2, Plus, Minus, ShoppingBag, ArrowRight, CheckCircle } from 'lucid
 import { Link, useNavigate } from 'react-router-dom';
 
 export default function Cart() {
-  const { cart, removeFromCart, addToCart, clearCart, addOrder, user, settings, coupons, products } = useStore();
+  const { cart, removeFromCart, addToCart, clearCart, addOrder, user, settings, coupons, products, categories } = useStore();
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState(false);
   const [couponCode, setCouponCode] = useState('');
   const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
   const [couponError, setCouponError] = useState('');
   const [formData, setFormData] = useState({
-    name: user?.displayName || '',
+    name: '',
     phone: '',
     address: ''
   });
-
-  React.useEffect(() => {
-    if (user?.displayName && !formData.name) {
-      setFormData(prev => ({ ...prev, name: user.displayName || '' }));
-    }
-  }, [user]);
 
   const navigate = useNavigate();
 
@@ -31,7 +25,32 @@ export default function Cart() {
   const calculateDiscount = () => {
     if (!appliedCoupon) return 0;
     
-    // Special case for "PROTHOM" or similar if the user wants product-specific discount
+    // Check for product-specific coupons in the cart
+    let productSpecificDiscount = 0;
+    let hasProductSpecificMatch = false;
+
+    cart.forEach(item => {
+      const product = products.find(p => p.id === item.productId);
+      if (product?.productCouponCode && appliedCoupon.code.toUpperCase() === product.productCouponCode.toUpperCase()) {
+        const discountPercent = product.productCouponDiscount || 0;
+        productSpecificDiscount += Math.round((item.price * item.quantity * discountPercent) / 100);
+        hasProductSpecificMatch = true;
+      } else {
+        // Check category-specific coupon
+        const productCategory = categories.find(c => c.slug === product?.category);
+        if (productCategory?.categoryCouponCode && appliedCoupon.code.toUpperCase() === productCategory.categoryCouponCode.toUpperCase()) {
+          const discountPercent = productCategory.categoryCouponDiscount || 0;
+          productSpecificDiscount += Math.round((item.price * item.quantity * discountPercent) / 100);
+          hasProductSpecificMatch = true;
+        }
+      }
+    });
+
+    if (hasProductSpecificMatch) {
+      return productSpecificDiscount;
+    }
+
+    // Special case for "PROTHOM" or similar if the user wants product-specific discount (legacy)
     if (appliedCoupon.code.toUpperCase() === 'PROTHOM') {
       return cart.reduce((acc, item) => {
         const product = products.find(p => p.id === item.productId);
@@ -50,14 +69,56 @@ export default function Cart() {
 
   const handleApplyCoupon = () => {
     setCouponError('');
-    const coupon = coupons.find(c => c.code.toUpperCase() === couponCode.toUpperCase());
+    const upperCode = couponCode.toUpperCase();
+    
+    // Check global coupons first
+    const coupon = coupons.find(c => c.code.toUpperCase() === upperCode);
     
     if (coupon) {
       setAppliedCoupon(coupon);
       setCouponCode('');
-    } else {
-      setCouponError('ভুল কুপন কোড! আবার চেষ্টা করুন।');
+      return;
     }
+
+    // Check if it matches any product-specific coupon in the cart
+    const matchingProduct = cart.find(item => {
+      const product = products.find(p => p.id === item.productId);
+      return product?.productCouponCode && upperCode === product.productCouponCode.toUpperCase();
+    });
+
+    if (matchingProduct) {
+      const product = products.find(p => p.id === matchingProduct.productId);
+      setAppliedCoupon({
+        id: 'product-specific',
+        code: product?.productCouponCode || upperCode,
+        discount: product?.productCouponDiscount || 0,
+        type: 'percentage'
+      });
+      setCouponCode('');
+      return;
+    }
+
+    // Check if it matches any category-specific coupon in the cart
+    const matchingCategoryProduct = cart.find(item => {
+      const product = products.find(p => p.id === item.productId);
+      const productCategory = categories.find(c => c.slug === product?.category);
+      return productCategory?.categoryCouponCode && upperCode === productCategory.categoryCouponCode.toUpperCase();
+    });
+
+    if (matchingCategoryProduct) {
+      const product = products.find(p => p.id === matchingCategoryProduct.productId);
+      const productCategory = categories.find(c => c.slug === product?.category);
+      setAppliedCoupon({
+        id: 'category-specific',
+        code: productCategory?.categoryCouponCode || upperCode,
+        discount: productCategory?.categoryCouponDiscount || 0,
+        type: 'percentage'
+      });
+      setCouponCode('');
+      return;
+    }
+
+    setCouponError('Invalid coupon code! Try again.');
   };
 
   const handleUpdateQuantity = (productId: string, size: string, delta: number) => {
@@ -103,12 +164,12 @@ export default function Cart() {
     return (
       <div className="min-h-screen bg-gray-50 pt-24 flex items-center justify-center px-4">
         <div className="bg-white p-8 rounded-2xl shadow-sm max-w-md w-full text-center">
-          <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <CheckCircle size={40} className="text-emerald-600" />
+          <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <CheckCircle size={40} className="text-red-600" />
           </div>
           <h1 className="text-2xl font-bold mb-2">Order Successful!</h1>
           <p className="text-gray-600 mb-6">Your order has been successfully received. Our representative will contact you soon.</p>
-          <div className="animate-pulse text-emerald-600 font-medium">
+          <div className="animate-pulse text-red-600 font-medium">
             Redirecting...
           </div>
         </div>
@@ -122,10 +183,10 @@ export default function Cart() {
         <div className="flex items-center justify-between mb-8">
           <div className="relative">
             <h1 className="text-2xl lg:text-3xl font-bold uppercase tracking-tight flex items-center space-x-3">
-              <ShoppingBag className="text-emerald-600" />
+              <ShoppingBag className="text-red-600" />
               <span>Shopping Cart</span>
             </h1>
-            <div className="w-12 h-1 bg-emerald-600 mt-2"></div>
+            <div className="w-12 h-1 bg-red-600 mt-2"></div>
           </div>
         </div>
 
@@ -138,7 +199,7 @@ export default function Cart() {
             <p className="text-gray-500 mb-8">Add some products to your cart now.</p>
             <Link 
               to="/shop" 
-              className="inline-flex items-center space-x-2 bg-emerald-600 text-white px-8 py-3 rounded-full font-bold hover:bg-emerald-700 transition-colors shadow-lg"
+              className="inline-flex items-center space-x-2 bg-red-600 text-white px-8 py-3 rounded-full font-bold hover:bg-red-700 transition-colors shadow-lg"
             >
               <span>Start Shopping</span>
               <ArrowRight size={20} />
@@ -184,7 +245,7 @@ export default function Cart() {
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="font-bold text-emerald-600">Tk {item.price * item.quantity}</p>
+                    <p className="font-bold text-red-600">Tk {item.price * item.quantity}</p>
                     <p className="text-xs text-gray-400">Tk {item.price} each</p>
                   </div>
                 </div>
@@ -208,9 +269,9 @@ export default function Cart() {
                         <span>Tk {deliveryCharge}</span>
                       </div>
                       {appliedCoupon && (
-                        <div className="flex justify-between text-emerald-600">
+                        <div className="flex justify-between text-red-600">
                           <span className="flex items-center">
-                            কুপন ডিসকাউন্ট ({appliedCoupon.code})
+                            Coupon Discount ({appliedCoupon.code})
                             <button onClick={() => setAppliedCoupon(null)} className="ml-1 text-red-500">
                               <Trash2 size={12} />
                             </button>
@@ -220,18 +281,19 @@ export default function Cart() {
                       )}
                       
                       <div className="pt-2">
+                        <label className="block text-sm font-bold text-gray-600 mb-2">Use coupon code below:</label>
                         <div className="flex space-x-2">
                           <input
                             type="text"
-                            placeholder="কুপন কোড লিখুন"
+                            placeholder="Enter code"
                             value={couponCode}
                             onChange={(e) => setCouponCode(e.target.value)}
-                            className="flex-grow border border-gray-300 rounded-lg py-2 px-3 focus:ring-2 focus:ring-emerald-500 outline-none text-sm"
+                            className="flex-grow border border-gray-300 rounded-lg py-2 px-3 focus:ring-2 focus:ring-red-500 outline-none text-sm"
                           />
                           <button
                             type="button"
                             onClick={handleApplyCoupon}
-                            className="bg-emerald-600 text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-emerald-700 transition-colors"
+                            className="bg-red-600 text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-red-700 transition-colors"
                           >
                             Apply
                           </button>
@@ -241,19 +303,19 @@ export default function Cart() {
 
                       <div className="border-t pt-4 flex justify-between font-bold text-lg">
                         <span>Total</span>
-                        <span className="text-emerald-600">Tk {total}</span>
+                        <span className="text-red-600">Tk {total}</span>
                       </div>
                     </div>
                     <button 
                       onClick={() => {
                         if (!user) {
-                          alert('অর্ডার করতে হলে আপনাকে লগইন করতে হবে।');
+                          alert('Please login to place an order.');
                           navigate('/profile', { state: { from: '/cart' } });
                           return;
                         }
                         setIsCheckingOut(true);
                       }}
-                      className="w-full bg-emerald-600 text-white py-4 rounded-xl font-bold hover:bg-emerald-700 transition-colors shadow-lg flex items-center justify-center space-x-2"
+                      className="w-full bg-red-600 text-white py-4 rounded-xl font-bold hover:bg-red-700 transition-colors shadow-lg flex items-center justify-center space-x-2"
                     >
                       <span>Checkout</span>
                       <ArrowRight size={20} />
@@ -268,7 +330,7 @@ export default function Cart() {
                         required
                         value={formData.name}
                         onChange={e => setFormData({...formData, name: e.target.value})}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 outline-none"
                         placeholder="Enter Name"
                       />
                     </div>
@@ -279,7 +341,7 @@ export default function Cart() {
                         required
                         value={formData.phone}
                         onChange={e => setFormData({...formData, phone: e.target.value})}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 outline-none"
                         placeholder="017XXXXXXXX"
                       />
                     </div>
@@ -289,20 +351,20 @@ export default function Cart() {
                         required
                         value={formData.address}
                         onChange={e => setFormData({...formData, address: e.target.value})}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none h-24 resize-none"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 outline-none h-24 resize-none"
                         placeholder="Enter detailed address"
                       ></textarea>
                     </div>
                     <div className="border-t pt-4 mb-4">
                       {appliedCoupon && (
-                        <div className="flex justify-between text-emerald-600 text-sm mb-2">
-                          <span>কুপন ডিসকাউন্ট ({appliedCoupon.code})</span>
+                        <div className="flex justify-between text-red-600 text-sm mb-2">
+                          <span>Coupon Discount ({appliedCoupon.code})</span>
                           <span>- Tk {discountAmount}</span>
                         </div>
                       )}
                       <div className="flex justify-between font-bold text-lg mb-4">
                         <span>Total Payable</span>
-                        <span className="text-emerald-600">Tk {total}</span>
+                        <span className="text-red-600">Tk {total}</span>
                       </div>
                     </div>
                     <div className="flex gap-4">
@@ -315,7 +377,7 @@ export default function Cart() {
                       </button>
                       <button 
                         type="submit"
-                        className="flex-[2] bg-emerald-600 text-white py-4 rounded-xl font-bold hover:bg-emerald-700 transition-colors shadow-lg"
+                        className="flex-[2] bg-red-600 text-white py-4 rounded-xl font-bold hover:bg-red-700 transition-colors shadow-lg"
                       >
                         Confirm Order
                       </button>

@@ -7,9 +7,9 @@ import autoTable from 'jspdf-autotable';
 export default function OrderSuccess() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { product, selectedSize, quantity, formData, totalAmount, shippingCharge, discountAmount, couponCode } = location.state || {};
+  const { order } = location.state || {};
 
-  if (!product || !formData) {
+  if (!order) {
     return (
       <div className="container py-32 text-center">
         <h2 className="text-2xl font-bold">Session Expired</h2>
@@ -18,8 +18,8 @@ export default function OrderSuccess() {
     );
   }
 
-  const orderId = Math.floor(100000 + Math.random() * 900000);
-  const orderDate = new Date().toLocaleString('en-GB', {
+  const orderId = order.id || Math.floor(100000 + Math.random() * 900000);
+  const orderDate = new Date(order.createdAt).toLocaleString('en-GB', {
     day: '2-digit',
     month: 'short',
     year: 'numeric',
@@ -28,15 +28,12 @@ export default function OrderSuccess() {
     hour12: true
   });
 
-  const subtotal = product.price * quantity;
-  const total = totalAmount || (subtotal + (shippingCharge || 70) - (discountAmount || 0));
-
   const generatePDF = () => {
     const doc = new jsPDF();
     
     // Header
     doc.setFontSize(22);
-    doc.setTextColor(5, 150, 105); // emerald-600
+    doc.setTextColor(220, 38, 38); // red-600
     doc.text('TSB SHOP BD', 105, 20, { align: 'center' });
     
     doc.setFontSize(16);
@@ -47,36 +44,37 @@ export default function OrderSuccess() {
     doc.setFontSize(10);
     doc.text(`Order ID: ${orderId}`, 20, 45);
     doc.text(`Date: ${orderDate}`, 20, 52);
-    doc.text(`Payment Method: Cash On Delivery`, 20, 59);
+    doc.text(`Payment Method: ${order.paymentMethod.toUpperCase()}`, 20, 59);
     
     // Shipping Address
     doc.setFontSize(12);
     doc.text('Shipping Address:', 20, 75);
     doc.setFontSize(10);
-    doc.text(formData.name, 20, 82);
-    doc.text(formData.phone, 20, 89);
-    doc.text(formData.address, 20, 96, { maxWidth: 100 });
+    doc.text(order.customerName, 20, 82);
+    doc.text(order.customerPhone, 20, 89);
+    doc.text(order.customerAddress, 20, 96, { maxWidth: 100 });
     
     // Table
     autoTable(doc, {
       startY: 110,
       head: [['Product', 'Size', 'Price', 'Qty', 'Total']],
-      body: [
-        [product.name, selectedSize, `BDT ${product.price}`, quantity, `BDT ${subtotal}`]
-      ],
+      body: order.items.map((item: any) => [
+        item.name, item.size, `BDT ${item.price}`, item.quantity, `BDT ${item.price * item.quantity}`
+      ]),
       headStyles: { fillColor: [5, 150, 105] },
     });
     
     // Summary
     const finalY = (doc as any).lastAutoTable.finalY + 10;
+    const subtotal = order.items.reduce((acc: number, item: any) => acc + (item.price * item.quantity), 0);
     doc.text(`Subtotal: BDT ${subtotal}`, 140, finalY);
-    doc.text(`Shipping: BDT ${shippingCharge || 0}`, 140, finalY + 7);
-    if (discountAmount > 0) {
-      doc.text(`Discount (${couponCode}): - BDT ${discountAmount}`, 140, finalY + 14);
+    doc.text(`Shipping: BDT ${order.deliveryCharge || 0}`, 140, finalY + 7);
+    if (order.discountAmount > 0) {
+      doc.text(`Discount (${order.couponCode}): - BDT ${order.discountAmount}`, 140, finalY + 14);
     }
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
-    doc.text(`Total: BDT ${total}`, 140, finalY + 22);
+    doc.text(`Total: BDT ${order.totalAmount}`, 140, finalY + 22);
     
     // Footer
     doc.setFontSize(10);
@@ -86,6 +84,8 @@ export default function OrderSuccess() {
     
     doc.save(`invoice-${orderId}.pdf`);
   };
+
+  const item = order.items[0];
 
   return (
     <div className="pt-8 pb-20 bg-white min-h-screen">
@@ -100,7 +100,7 @@ export default function OrderSuccess() {
             <CheckCircle2 size={40} />
           </motion.div>
           <div className="space-y-1">
-            <p className="text-lg">Thanks you, <span className="font-bold text-emerald-600">{formData.name}</span></p>
+            <p className="text-lg">Thanks you, <span className="font-bold text-red-600">{order.customerName}</span></p>
             <h1 className="text-2xl font-bold text-black-custom">Your Order has been received</h1>
           </div>
           <p className="text-sm text-gray-500 px-4">
@@ -120,7 +120,7 @@ export default function OrderSuccess() {
         </div>
 
         {/* Order Info Grid */}
-        <div className="grid grid-cols-3 gap-4 mb-8 px-2">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 mb-8 px-2">
           <div className="space-y-1">
             <p className="text-xs text-gray-400">Order Id</p>
             <p className="text-sm font-bold">{orderId}</p>
@@ -131,15 +131,17 @@ export default function OrderSuccess() {
           </div>
           <div className="space-y-1">
             <p className="text-xs text-gray-400">Total:</p>
-            <p className="text-sm font-bold">BDT {total}</p>
+            <p className="text-sm font-bold">BDT {order.totalAmount}</p>
           </div>
           <div className="space-y-1">
             <p className="text-xs text-gray-400">Payment Method:</p>
-            <p className="text-sm font-bold capitalize">Cash On Delivery</p>
+            <p className="text-sm font-bold capitalize">{order.paymentMethod}</p>
           </div>
           <div className="space-y-1">
-            <p className="text-xs text-gray-400">Shipping Area:</p>
-            <p className="text-sm font-bold">{formData.shippingLocation === 'inside' ? 'Inside Dhaka' : 'Outside Dhaka'}</p>
+            <p className="text-xs text-gray-400">Payment Status:</p>
+            <p className={`text-sm font-bold capitalize ${order.paymentStatus === 'awaiting-verification' ? 'text-amber-600' : 'text-green-600'}`}>
+              {order.paymentStatus?.replace('-', ' ')}
+            </p>
           </div>
         </div>
 
@@ -147,9 +149,9 @@ export default function OrderSuccess() {
         <div className="mb-8 px-2">
           <h3 className="text-sm font-bold mb-2">Shipping address</h3>
           <div className="text-sm text-gray-600 space-y-0.5">
-            <p>{formData.name}</p>
-            <p>{formData.phone}</p>
-            <p className="text-xs">{formData.address}</p>
+            <p>{order.customerName}</p>
+            <p>{order.customerPhone}</p>
+            <p className="text-xs">{order.customerAddress}</p>
           </div>
         </div>
 
@@ -157,12 +159,12 @@ export default function OrderSuccess() {
         <div className="space-y-4 mb-8 px-2 border-t pt-4">
           <div className="flex justify-between items-start text-sm">
             <div className="flex-grow">
-              <p className="font-medium text-gray-800">{product.name}</p>
-              <p className="text-xs text-gray-400 mt-1">size: {selectedSize}</p>
+              <p className="font-medium text-gray-800">{item.name}</p>
+              <p className="text-xs text-gray-400 mt-1">size: {item.size}</p>
             </div>
             <div className="flex space-x-8">
-              <span className="text-gray-500">{quantity} x {product.price}</span>
-              <span className="font-bold">{subtotal}</span>
+              <span className="text-gray-500">{item.quantity} x {item.price}</span>
+              <span className="font-bold">{item.price * item.quantity}</span>
             </div>
           </div>
         </div>
@@ -171,46 +173,60 @@ export default function OrderSuccess() {
         <div className="space-y-2 border-t pt-4 mb-10 px-2">
           <div className="flex justify-between text-sm">
             <span className="text-gray-500">Subtotal:</span>
-            <span className="font-medium">BDT {subtotal}</span>
+            <span className="font-medium">BDT {order.totalAmount - order.deliveryCharge + order.discountAmount}</span>
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-gray-500">Shipping:</span>
-            <span className="font-medium">BDT {shippingCharge || 0}</span>
+            <span className="font-medium">BDT {order.deliveryCharge || 0}</span>
           </div>
-          {discountAmount > 0 && (
-            <div className="flex justify-between text-sm text-emerald-600">
-              <span>Discount ({couponCode}):</span>
-              <span className="font-medium">- BDT {discountAmount}</span>
+          {order.discountAmount > 0 && (
+            <div className="flex justify-between text-sm text-red-600">
+              <span>Discount ({order.couponCode}):</span>
+              <span className="font-medium">- BDT {order.discountAmount}</span>
             </div>
           )}
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-500">VAT:</span>
-            <span className="font-medium">BDT 0</span>
-          </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-500">Payment Method:</span>
-            <span className="font-medium capitalize">Cash on delivery</span>
-          </div>
-          <div className="flex justify-between text-base font-bold pt-2">
+          
+          {order.paymentMethod !== 'cod' && (
+            <>
+              <div className="flex justify-between text-sm font-bold text-red-600 pt-2 border-t border-dashed">
+                <span>Advance Paid:</span>
+                <span>BDT {order.advanceAmount}</span>
+              </div>
+              <div className="flex justify-between text-sm font-bold text-gray-700">
+                <span>Due Amount:</span>
+                <span>BDT {order.dueAmount}</span>
+              </div>
+            </>
+          )}
+
+          <div className="flex justify-between text-base font-bold pt-4 border-t">
             <span>Total</span>
-            <span className="text-black">BDT {total}</span>
+            <span className="text-black">BDT {order.totalAmount}</span>
           </div>
         </div>
 
         {/* Action Buttons */}
-        <div className="flex space-x-4 px-2">
+        <div className="flex flex-col space-y-3 px-2">
+          <div className="flex space-x-4">
+            <button 
+              onClick={() => navigate('/')}
+              className="flex-grow bg-gray-100 text-gray-700 py-3 rounded-md font-bold flex items-center justify-center space-x-2 text-sm hover:bg-gray-200 transition-colors"
+            >
+              <span>Continue Shopping</span>
+            </button>
+            <button 
+              onClick={generatePDF}
+              className="flex-grow bg-red-600 text-white py-3 rounded-md font-bold flex items-center justify-center space-x-2 text-sm hover:bg-red-700 transition-colors"
+            >
+              <FileDown size={18} />
+              <span>Download Invoice</span>
+            </button>
+          </div>
           <button 
-            onClick={() => navigate('/')}
-            className="flex-grow bg-gray-100 text-gray-700 py-3 rounded-md font-bold flex items-center justify-center space-x-2 text-sm hover:bg-gray-200 transition-colors"
+            onClick={() => navigate('/orders')}
+            className="w-full bg-black text-white py-3 rounded-md font-bold flex items-center justify-center space-x-2 text-sm hover:bg-gray-800 transition-colors"
           >
-            <span>Continue Shopping</span>
-          </button>
-          <button 
-            onClick={generatePDF}
-            className="flex-grow bg-emerald-600 text-white py-3 rounded-md font-bold flex items-center justify-center space-x-2 text-sm hover:bg-emerald-700 transition-colors"
-          >
-            <FileDown size={18} />
-            <span>Download Invoice (PDF)</span>
+            <span>View My Orders</span>
           </button>
         </div>
       </div>

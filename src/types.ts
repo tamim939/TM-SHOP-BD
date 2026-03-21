@@ -12,8 +12,11 @@ export interface Product {
   description?: string;
   sizes?: string[];
   images?: string[];
+  maxImages?: number;
   stock?: 'in-stock' | 'out-of-stock';
   couponDiscount?: number;
+  productCouponCode?: string;
+  productCouponDiscount?: number;
 }
 
 export interface Category {
@@ -21,6 +24,8 @@ export interface Category {
   name: string;
   slug: string;
   image: string;
+  categoryCouponCode?: string;
+  categoryCouponDiscount?: number;
 }
 
 export interface OrderItem {
@@ -46,6 +51,12 @@ export interface Order {
   deliveryCharge?: number;
   discountAmount?: number;
   couponCode?: string;
+  paymentMethod: 'cod' | 'bkash' | 'nagad' | 'rocket';
+  paymentPhone?: string;
+  transactionId?: string;
+  advanceAmount?: number;
+  dueAmount?: number;
+  paymentStatus?: 'pending' | 'verified' | 'failed' | 'awaiting-verification';
 }
 
 export interface Coupon {
@@ -112,4 +123,10 @@ export interface Settings {
   companyName?: string;
   shippingCharge?: number;
   shippingChargeOutside?: number;
+  bkashNumber?: string;
+  nagadNumber?: string;
+  rocketNumber?: string;
+  advancePaymentPercentage?: number;
+  showNotice?: boolean;
+  noticeText?: string;
 }

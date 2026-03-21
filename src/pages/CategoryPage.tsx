@@ -12,7 +12,7 @@ export default function CategoryPage() {
       <div className="container pt-24 pb-12">
         <div className="text-center mb-12 animate-pulse">
           <div className="h-12 w-64 bg-gray-200 mx-auto mb-4 rounded" />
-          <div className="w-24 h-1.5 bg-emerald-600 mx-auto rounded-full" />
+          <div className="w-24 h-1.5 bg-red-600 mx-auto rounded-full" />
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-8">
           {[...Array(8)].map((_, i) => (
@@ -41,8 +41,8 @@ export default function CategoryPage() {
   return (
     <div className="container pt-12 pb-12">
       <div className="text-center mb-12">
-        <h1 className="text-3xl lg:text-5xl font-bold uppercase tracking-tight mb-4 text-emerald-600">{category.name}</h1>
-        <div className="w-24 h-1.5 bg-emerald-600 mx-auto rounded-full"></div>
+        <h1 className="text-3xl lg:text-5xl font-bold uppercase tracking-tight mb-4 text-red-600">{category.name}</h1>
+        <div className="w-24 h-1.5 bg-red-600 mx-auto rounded-full"></div>
         <p className="mt-4 text-gray-500 uppercase tracking-widest text-sm">Showing all products in {category.name}</p>
       </div>
 

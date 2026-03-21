@@ -15,11 +15,11 @@ export default function Wishlist() {
           <div className="relative">
             <h1 className="text-2xl lg:text-3xl font-bold uppercase tracking-tight flex items-center space-x-3">
               <Heart className="text-red-500" fill="currentColor" />
-              <span>আমার উইশলিস্ট</span>
+              <span>My Wishlist</span>
             </h1>
-            <div className="w-12 h-1 bg-emerald-600 mt-2"></div>
+            <div className="w-12 h-1 bg-red-600 mt-2"></div>
           </div>
-          <p className="text-gray-500 font-medium">{wishlistProducts.length} টি প্রোডাক্ট</p>
+          <p className="text-gray-500 font-medium">{wishlistProducts.length} Products</p>
         </div>
 
         {wishlistProducts.length === 0 ? (
@@ -27,14 +27,14 @@ export default function Wishlist() {
             <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
               <Heart size={40} className="text-gray-300" />
             </div>
-            <h2 className="text-xl font-bold mb-2">আপনার উইশলিস্ট খালি</h2>
-            <p className="text-gray-500 mb-8">আপনার পছন্দের প্রোডাক্টগুলো এখানে সেভ করে রাখতে পারেন।</p>
+            <h2 className="text-xl font-bold mb-2">Your wishlist is empty</h2>
+            <p className="text-gray-500 mb-8">You can save your favorite products here.</p>
             <Link 
               to="/shop" 
-              className="inline-flex items-center space-x-2 bg-emerald-600 text-white px-8 py-3 rounded-full font-bold hover:bg-emerald-700 transition-colors shadow-lg"
+              className="inline-flex items-center space-x-2 bg-red-600 text-white px-8 py-3 rounded-full font-bold hover:bg-red-700 transition-colors shadow-lg"
             >
               <ShoppingBag size={20} />
-              <span>শপিং শুরু করুন</span>
+              <span>Start Shopping</span>
             </Link>
           </div>
         ) : (
