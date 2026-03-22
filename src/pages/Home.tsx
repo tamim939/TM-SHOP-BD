@@ -25,22 +25,26 @@ export default function Home() {
     <div className="">
       <Hero />
       
-      {/* Notice Bar */}
-      <div className="bg-red-600 py-2 overflow-hidden relative">
-        <div className="whitespace-nowrap animate-marquee inline-block">
-          <span className="text-sm md:text-base font-bold text-white px-12">
-            {settings.sliderTitle || 'Check out our new collection!'}
-          </span>
-          <span className="text-sm md:text-base font-bold text-white px-12">
-            {settings.sliderTitle || 'Check out our new collection!'}
-          </span>
-          <span className="text-sm md:text-base font-bold text-white px-12">
-            {settings.sliderTitle || 'Check out our new collection!'}
-          </span>
-        </div>
-      </div>
-      
       <CategorySection />
+
+      {/* Skeletons for sections if not loaded */}
+      {(!productsLoaded || !categoriesLoaded) && (
+        <div className="space-y-12 py-12">
+          {[1, 2].map(i => (
+            <div key={i} className="container">
+              <div className="mb-8 flex items-center justify-between animate-pulse">
+                <div className="w-48 h-8 bg-gray-100 rounded" />
+                <div className="w-20 h-6 bg-gray-100 rounded" />
+              </div>
+              <div className="flex space-x-4 overflow-hidden">
+                {[1, 2, 3, 4, 5].map(j => (
+                  <div key={j} className="min-w-[150px] aspect-[3/4] bg-gray-100 rounded-2xl animate-pulse" />
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Categorized Product Sections */}
       {sortedCategories.map(category => {
@@ -80,41 +84,6 @@ export default function Home() {
           </section>
         );
       })}
-
-      {/* Features */}
-      <section className="py-12 bg-white">
-        <div className="container">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="flex items-center space-x-4 p-6 bg-red-50 rounded-2xl">
-              <div className="bg-red-600 p-3 rounded-xl text-white">
-                <Truck size={24} />
-              </div>
-              <div>
-                <h3 className="font-bold">Fast Delivery</h3>
-                <p className="text-sm text-gray-500">Home delivery all over Bangladesh</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-4 p-6 bg-red-50 rounded-2xl">
-              <div className="bg-red-600 p-3 rounded-xl text-white">
-                <Shield size={24} />
-              </div>
-              <div>
-                <h3 className="font-bold">Secure Payment</h3>
-                <p className="text-sm text-gray-500">Cash on delivery available</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-4 p-6 bg-red-50 rounded-2xl">
-              <div className="bg-red-600 p-3 rounded-xl text-white">
-                <Star size={24} />
-              </div>
-              <div>
-                <h3 className="font-bold">Best Quality</h3>
-                <p className="text-sm text-gray-500">100% Original Products</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
     </div>
   );
 }

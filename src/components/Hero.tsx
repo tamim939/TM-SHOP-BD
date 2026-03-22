@@ -11,7 +11,9 @@ export default function Hero() {
 
   if (!slidersLoaded) {
     return (
-      <section className="relative w-full aspect-[12/5] max-h-[600px] bg-gray-100 animate-pulse" />
+      <section className="relative w-full px-4 lg:px-6 py-4">
+        <div className="max-w-[1400px] mx-auto w-full bg-gray-100 animate-pulse aspect-[16/9] md:aspect-[21/9] rounded-3xl" />
+      </section>
     );
   }
 
@@ -20,30 +22,36 @@ export default function Hero() {
   }
 
   return (
-    <section className="relative w-full px-4 pt-4">
-      <div className="max-w-7xl mx-auto rounded-2xl overflow-hidden shadow-lg">
+    <section className="relative w-full px-4 lg:px-6 py-4">
+      <div className="max-w-[1400px] mx-auto w-full overflow-hidden rounded-3xl shadow-xl shadow-black/5 border border-gray-100">
         <Swiper
           spaceBetween={0}
           centeredSlides={true}
           autoplay={{
-            delay: 15000,
+            delay: 5000,
             disableOnInteraction: false,
           }}
-          modules={[Autoplay]}
-          className="w-full aspect-[12/5] max-h-[600px]"
+          pagination={{
+            clickable: true,
+            dynamicBullets: true,
+          }}
+          modules={[Autoplay, Pagination]}
+          className="w-full aspect-[16/9] md:aspect-[21/9] max-h-[700px]"
         >
           {sliders.map((slide) => (
             <SwiperSlide key={slide.id}>
-              <Link to={slide.link || '#'} className="block w-full h-full">
+              <Link to={slide.link || '#'} className="block w-full h-full relative group">
                 <picture>
                   {slide.mobileImage && <source media="(max-width: 768px)" srcSet={slide.mobileImage} />}
                   <img 
                     src={slide.image} 
                     alt="Banner" 
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                     referrerPolicy="no-referrer"
                   />
                 </picture>
+                {/* Subtle Gradient Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent pointer-events-none" />
               </Link>
             </SwiperSlide>
           ))}

@@ -121,7 +121,12 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     rocketNumber: '01918987804',
     advancePaymentPercentage: 70,
     showNotice: true,
-    noticeText: 'Welcome to TM SHOP BD! Enjoy your shopping.'
+    noticeText: 'Welcome to TM SHOP BD! Enjoy your shopping.',
+    facebookLink: 'https://facebook.com',
+    twitterLink: 'https://twitter.com',
+    youtubeLink: 'https://youtube.com',
+    instagramLink: 'https://instagram.com',
+    linkedinLink: 'https://linkedin.com'
   });
   const [user, setUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
@@ -804,7 +809,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const isInWishlist = (productId: string) => wishlist.includes(productId);
 
-  const isAppReady = (settingsLoaded && productsLoaded && categoriesLoaded && slidersLoaded && !authLoading) || (productsLoaded && categoriesLoaded && !authLoading);
+  const isAppReady = settingsLoaded && productsLoaded && categoriesLoaded && !authLoading;
 
   return (
     <StoreContext.Provider value={{ 

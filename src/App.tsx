@@ -18,31 +18,28 @@ import LoadingScreen from './components/LoadingScreen';
 import { StoreProvider, useStore } from './context/StoreContext';
 
 function Layout() {
-  const isAppReady = useStore().isAppReady;
+  const { settings } = useStore();
   const location = window.location.pathname;
   const isAdminPage = location === '/admin';
+  const hasNotice = settings.showNotice && settings.noticeText;
 
   return (
     <div className="min-h-screen flex flex-col">
       {!isAdminPage && <Header />}
-      <main className={`flex-grow relative min-h-[400px] ${!isAdminPage ? 'pt-16 lg:pt-20' : ''}`}>
-        {!isAppReady ? (
-          <LoadingScreen />
-        ) : (
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/shop" element={<Shop />} />
-            <Route path="/product/:slug" element={<ProductDetail />} />
-            <Route path="/category/:slug" element={<CategoryPage />} />
-            <Route path="/checkout" element={<Checkout />} />
-            <Route path="/order-success" element={<OrderSuccess />} />
-            <Route path="/admin" element={<Admin />} />
-            <Route path="/wishlist" element={<Wishlist />} />
-            <Route path="/cart" element={<Cart />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/orders" element={<Orders />} />
-          </Routes>
-        )}
+      <main className={`flex-grow relative min-h-[400px] ${!isAdminPage ? (hasNotice ? 'pt-28 lg:pt-32' : 'pt-16 lg:pt-20') : ''}`}>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/shop" element={<Shop />} />
+          <Route path="/product/:slug" element={<ProductDetail />} />
+          <Route path="/category/:slug" element={<CategoryPage />} />
+          <Route path="/checkout" element={<Checkout />} />
+          <Route path="/order-success" element={<OrderSuccess />} />
+          <Route path="/admin" element={<Admin />} />
+          <Route path="/wishlist" element={<Wishlist />} />
+          <Route path="/cart" element={<Cart />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/orders" element={<Orders />} />
+        </Routes>
       </main>
       {!isAdminPage && <Footer />}
       {!isAdminPage && <BottomNav />}

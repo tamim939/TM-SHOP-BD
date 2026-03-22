@@ -116,7 +116,7 @@ export default function Header() {
                 setSearchQuery('');
               }
             }}
-            className="w-full bg-gray-100 rounded-lg py-2.5 pl-12 pr-12 focus:outline-none focus:ring-2 focus:ring-red-500/20 text-sm"
+            className="w-full bg-gray-100 rounded-full py-2.5 pl-12 pr-12 focus:outline-none focus:ring-2 focus:ring-red-500/20 text-sm border border-gray-200"
           />
           <button 
             onClick={() => {
@@ -142,7 +142,7 @@ export default function Header() {
               placeholder="Search..." 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-gray-100 rounded-lg py-2 pl-9 pr-8 focus:outline-none text-xs"
+              className="w-full bg-gray-100 rounded-full py-2 pl-9 pr-8 focus:outline-none text-xs border border-gray-200"
             />
             <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
           </div>

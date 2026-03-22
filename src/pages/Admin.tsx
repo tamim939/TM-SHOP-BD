@@ -427,79 +427,6 @@ const Admin: React.FC = () => {
     doc.save(`daily-report-${today}.pdf`);
   };
 
-  const generateUsersReportPDF = () => {
-    const doc = new jsPDF();
-    doc.setFontSize(18);
-    doc.setTextColor(220, 38, 38);
-    doc.text(`${settings.companyName || 'TSB SHOP BD'} - Registered Users Report`, 105, 20, { align: 'center' });
-
-    const tableData = users.map(u => {
-      const userOrders = orders.filter(o => o.userId === u.uid);
-      const totalSpent = userOrders
-        .filter(o => o.status !== 'cancelled')
-        .reduce((sum, o) => sum + (o.totalAmount || o.total || 0), 0);
-      return [
-        u.name || 'Unknown',
-        u.email || 'N/A',
-        new Date(u.createdAt).toLocaleDateString(),
-        userOrders.length,
-        `Tk ${totalSpent}`,
-        u.isBanned ? 'Banned' : 'Active'
-      ];
-    });
-
-    autoTable(doc, {
-      startY: 30,
-      head: [['Name', 'Email', 'Joined', 'Orders', 'Total Spent', 'Status']],
-      body: tableData,
-      headStyles: { fillColor: [220, 38, 38] },
-    });
-
-    (doc as any).lastAutoTable.finalY || 30;
-    doc.save('users-report.pdf');
-  };
-
-  const generateUserOrdersPDF = (user: any, userOrders: any[]) => {
-    const doc = new jsPDF();
-    doc.setFontSize(18);
-    doc.setTextColor(220, 38, 38);
-    doc.text(`Order History: ${user.name || 'User'}`, 105, 20, { align: 'center' });
-    doc.setFontSize(10);
-    doc.setTextColor(100);
-    doc.text(`Email: ${user.email}`, 105, 28, { align: 'center' });
-
-    const tableData = userOrders.map(o => [
-      o.id.substring(0, 8),
-      new Date(o.createdAt).toLocaleDateString(),
-      o.items.length,
-      `Tk ${o.totalAmount || 0}`,
-      o.status
-    ]);
-
-    autoTable(doc, {
-      startY: 35,
-      head: [['Order ID', 'Date', 'Items', 'Total', 'Status']],
-      body: tableData,
-      headStyles: { fillColor: [220, 38, 38] },
-    });
-
-    const totalOrdered = userOrders.reduce((sum, o) => sum + (o.totalAmount || o.total || 0), 0);
-    const confirmedOrders = userOrders.filter(o => o.status !== 'cancelled');
-    const totalSpent = confirmedOrders.reduce((sum, o) => sum + (o.totalAmount || o.total || 0), 0);
-    const cancelledOrders = userOrders.filter(o => o.status === 'cancelled');
-    const cancelledAmount = cancelledOrders.reduce((sum, o) => sum + (o.totalAmount || o.total || 0), 0);
-
-    const finalY = (doc as any).lastAutoTable.finalY || 35;
-    doc.setFontSize(12);
-    doc.setTextColor(0);
-    doc.text(`Total Orders: ${userOrders.length}`, 20, finalY + 15);
-    doc.text(`Total Ordered Amount: Tk ${totalOrdered}`, 20, finalY + 25);
-    doc.text(`Total Spent (Confirmed): Tk ${totalSpent}`, 20, finalY + 35);
-    doc.text(`Cancelled Amount: Tk ${cancelledAmount}`, 20, finalY + 45);
-
-    doc.save(`user-report-${user.uid.substring(0, 5)}.pdf`);
-  };
-
   const stats = [
     { label: 'Total Orders', value: orders.length, icon: ShoppingBag, color: 'bg-blue-500' },
     { label: 'Total Products', value: products.length, icon: Package, color: 'bg-red-500' },
@@ -1504,13 +1431,6 @@ const Admin: React.FC = () => {
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <h2 className="text-2xl font-bold">Users ({users.length})</h2>
-              <button
-                onClick={generateUsersReportPDF}
-                className="w-full sm:w-auto flex items-center justify-center space-x-2 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
-              >
-                <FileText className="w-5 h-5" />
-                <span>User Report (PDF)</span>
-              </button>
             </div>
 
             <div className="grid grid-cols-1 gap-4">
@@ -1568,14 +1488,6 @@ const Admin: React.FC = () => {
                       </div>
 
                       <div className="flex items-center space-x-2 pt-4 lg:pt-0 border-t lg:border-t-0 border-gray-50">
-                        <button
-                          onClick={() => generateUserOrdersPDF(user, userOrders)}
-                          className="flex-1 lg:flex-none flex items-center justify-center space-x-2 px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors"
-                          title="Download User Report"
-                        >
-                          <Download className="w-5 h-5" />
-                          <span className="lg:hidden">Report</span>
-                        </button>
                         <button
                           onClick={() => banUser(user.uid, !user.isBanned)}
                           className={`flex-1 lg:flex-none flex items-center justify-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
@@ -1776,6 +1688,63 @@ const Admin: React.FC = () => {
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
                   />
                 </div>
+
+                <div className="border-t pt-6 mt-6">
+                  <h3 className="text-lg font-bold mb-4">Social Media Links</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Facebook Link</label>
+                      <input
+                        type="text"
+                        value={settings.facebookLink || ''}
+                        onChange={e => updateSettings({ ...settings, facebookLink: e.target.value })}
+                        placeholder="https://facebook.com/yourpage"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Twitter Link</label>
+                      <input
+                        type="text"
+                        value={settings.twitterLink || ''}
+                        onChange={e => updateSettings({ ...settings, twitterLink: e.target.value })}
+                        placeholder="https://twitter.com/yourhandle"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">YouTube Link</label>
+                      <input
+                        type="text"
+                        value={settings.youtubeLink || ''}
+                        onChange={e => updateSettings({ ...settings, youtubeLink: e.target.value })}
+                        placeholder="https://youtube.com/yourchannel"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Instagram Link</label>
+                      <input
+                        type="text"
+                        value={settings.instagramLink || ''}
+                        onChange={e => updateSettings({ ...settings, instagramLink: e.target.value })}
+                        placeholder="https://instagram.com/yourprofile"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">LinkedIn Link</label>
+                      <input
+                        type="text"
+                        value={settings.linkedinLink || ''}
+                        onChange={e => updateSettings({ ...settings, linkedinLink: e.target.value })}
+                        placeholder="https://linkedin.com/in/yourprofile"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
+                      />
+                    </div>
+                  </div>
+                </div>
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Slider Subtitle</label>
                   <input
@@ -1818,6 +1787,19 @@ const Admin: React.FC = () => {
 
                 <div className="border-t pt-6 mt-6">
                   <h3 className="text-lg font-bold mb-4">Payment Settings</h3>
+                  <div className="space-y-4 mb-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Payment Gateway Image (Link)</label>
+                      <input
+                        type="text"
+                        value={settings.paymentGatewayImage || ''}
+                        onChange={e => updateSettings({ ...settings, paymentGatewayImage: e.target.value })}
+                        placeholder="https://example.com/payment-gateways.png"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
+                      />
+                      <p className="text-xs text-gray-400 mt-1">Provide a direct image link for the payment gateway logos in the footer.</p>
+                    </div>
+                  </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">bKash Number</label>

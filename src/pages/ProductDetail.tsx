@@ -145,17 +145,20 @@ export default function ProductDetail() {
 
             {/* Size Selection */}
             {product.sizes && product.sizes.length > 0 && (
-              <div className="space-y-3">
-                <h3 className="font-bold text-sm text-gray-500 uppercase tracking-wider">Size</h3>
-                <div className="flex flex-wrap gap-3">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-black text-sm text-gray-900 uppercase tracking-wider">Select Size</h3>
+                  <span className="text-xs text-red-600 font-bold">Size Guide</span>
+                </div>
+                <div className="flex flex-wrap gap-2">
                   {product.sizes.map(size => (
                     <button
                       key={size}
                       onClick={() => setSelectedSize(size)}
-                      className={`px-5 py-2 rounded-lg border-2 transition-all font-bold text-sm ${
+                      className={`min-w-[50px] h-11 rounded-xl border-2 transition-all font-black text-sm flex items-center justify-center ${
                         selectedSize === size 
-                          ? 'border-red-600 bg-red-50 text-red-600' 
-                          : 'border-gray-100 bg-gray-50 text-gray-600 hover:border-red-200'
+                          ? 'border-red-600 bg-red-600 text-white shadow-lg shadow-red-100' 
+                          : 'border-gray-100 bg-white text-gray-600 hover:border-red-200'
                       }`}
                     >
                       {size}
@@ -166,51 +169,53 @@ export default function ProductDetail() {
             )}
 
             {/* Action Buttons */}
-            <div className="space-y-3 pt-2">
-              <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-4 pt-4">
+              <div className="flex flex-col gap-3">
                 <button 
                   onClick={handleOrderNow}
-                  className="bg-[#FF4D00] hover:bg-[#E64500] text-white py-4 rounded-full font-black text-lg shadow-lg active:scale-95 transition-all"
+                  className="w-full bg-red-600 hover:bg-red-700 text-white py-4 rounded-2xl font-black text-xl shadow-xl shadow-red-100 active:scale-[0.98] transition-all flex items-center justify-center space-x-3"
                 >
-                  Buy Now
+                  <ShoppingBag size={24} />
+                  <span>Order Now</span>
                 </button>
-                <button 
-                  onClick={() => {
-                    addToCart({
-                      productId: product.id,
-                      name: product.name,
-                      price: product.price,
-                      image: product.image,
-                      quantity,
-                      size: selectedSize
-                    });
-                    alert('Added to cart!');
-                  }}
-                  className="bg-white border-2 border-gray-200 hover:border-red-600 hover:text-red-600 text-gray-900 py-4 rounded-full font-black text-lg active:scale-95 transition-all"
-                >
-                  Add to Cart
-                </button>
+                <div className="grid grid-cols-2 gap-3">
+                  <button 
+                    onClick={() => {
+                      addToCart({
+                        productId: product.id,
+                        name: product.name,
+                        price: product.price,
+                        image: product.image,
+                        quantity,
+                        size: selectedSize
+                      });
+                      alert('Added to cart!');
+                    }}
+                    className="bg-white border-2 border-gray-200 hover:border-red-600 hover:text-red-600 text-gray-900 py-4 rounded-2xl font-black text-lg active:scale-[0.98] transition-all flex items-center justify-center space-x-2"
+                  >
+                    <span>Add to Cart</span>
+                  </button>
+                  <button 
+                    onClick={() => window.open(`https://wa.me/88${settings.whatsappNumber}?text=${encodeURIComponent(`I want to order: ${product.name}\nPrice: Tk ${product.price}\nLink: ${window.location.href}`)}`, '_blank')}
+                    className="bg-[#25D366] hover:bg-[#128C7E] text-white py-4 rounded-2xl font-black text-lg flex items-center justify-center space-x-2 shadow-lg active:scale-[0.98] transition-all"
+                  >
+                    <Phone size={20} fill="currentColor" />
+                    <span>WhatsApp</span>
+                  </button>
+                </div>
               </div>
-
-              <button 
-                onClick={() => window.open(`https://wa.me/${settings.whatsappNumber}?text=${encodeURIComponent(`I want to order: ${product.name}\nPrice: Tk ${product.price}\nLink: ${window.location.href}`)}`, '_blank')}
-                className="w-full bg-[#25D366] hover:bg-[#128C7E] text-white py-4 rounded-full font-black text-lg flex items-center justify-center space-x-3 shadow-lg active:scale-95 transition-all"
-              >
-                <Phone size={24} fill="currentColor" />
-                <span>WhatsApp</span>
-              </button>
 
               <div className="grid grid-cols-2 gap-3">
                 <button 
                   onClick={() => toggleWishlist(product.id)}
-                  className={`flex items-center justify-center space-x-2 py-4 rounded-2xl border-2 transition-all font-bold ${
+                  className={`flex items-center justify-center space-x-2 py-3.5 rounded-2xl border-2 transition-all font-bold text-sm ${
                     isInWishlist(product.id)
                       ? 'bg-red-50 border-red-200 text-red-600'
                       : 'bg-white border-gray-100 text-gray-600 hover:border-red-200'
                   }`}
                 >
-                  <Heart size={20} fill={isInWishlist(product.id) ? "currentColor" : "none"} />
-                  <span>Save Product</span>
+                  <Heart size={18} fill={isInWishlist(product.id) ? "currentColor" : "none"} />
+                  <span>{isInWishlist(product.id) ? 'Saved' : 'Save'}</span>
                 </button>
                 <button 
                   onClick={() => {
@@ -225,9 +230,9 @@ export default function ProductDetail() {
                       alert('Link copied to clipboard!');
                     }
                   }}
-                  className="flex items-center justify-center space-x-2 py-4 rounded-2xl border-2 border-gray-100 bg-white text-gray-600 hover:border-red-200 transition-all font-bold"
+                  className="flex items-center justify-center space-x-2 py-3.5 rounded-2xl border-2 border-gray-100 bg-white text-gray-600 hover:border-red-200 transition-all font-bold text-sm"
                 >
-                  <Share2 size={20} />
+                  <Share2 size={18} />
                   <span>Share</span>
                 </button>
               </div>

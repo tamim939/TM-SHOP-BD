@@ -301,9 +301,9 @@ export default function Cart() {
                         {couponError && <p className="text-red-500 text-[10px] mt-1">{couponError}</p>}
                       </div>
 
-                      <div className="border-t pt-4 flex justify-between font-bold text-lg">
-                        <span>Total</span>
-                        <span className="text-red-600">Tk {total}</span>
+                      <div className="bg-red-50 p-4 rounded-2xl mt-4 flex justify-between items-center">
+                        <span className="font-bold text-red-900">Total</span>
+                        <span className="text-2xl font-black text-red-600">Tk {total}</span>
                       </div>
                     </div>
                     <button 
@@ -362,9 +362,9 @@ export default function Cart() {
                           <span>- Tk {discountAmount}</span>
                         </div>
                       )}
-                      <div className="flex justify-between font-bold text-lg mb-4">
-                        <span>Total Payable</span>
-                        <span className="text-red-600">Tk {total}</span>
+                      <div className="bg-red-50 p-4 rounded-2xl mb-4 flex justify-between items-center">
+                        <span className="font-bold text-red-900">Total Payable</span>
+                        <span className="text-2xl font-black text-red-600">Tk {total}</span>
                       </div>
                     </div>
                     <div className="flex gap-4">

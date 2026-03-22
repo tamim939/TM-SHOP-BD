@@ -526,9 +526,9 @@ export default function Checkout() {
                     </>
                   )}
 
-                  <div className="flex justify-between text-2xl font-bold pt-6 border-t">
-                    <span>Total</span>
-                    <span className="text-red-600">Tk {totalAmount}</span>
+                  <div className="bg-red-50 p-6 rounded-3xl mt-8 flex justify-between items-center">
+                    <span className="text-lg font-bold text-red-900">Total</span>
+                    <span className="text-3xl font-black text-red-600">Tk {totalAmount}</span>
                   </div>
                 </div>
 
