@@ -31,8 +31,7 @@ export default function Orders() {
   const userOrders = orders.filter(order => order.userId === user.uid);
   
   const filters = [
-    'All Orders', 'Pending', 'Confirmed', 'Order placed', 
-    'Shipped', 'Received', 'Shipped to Customer', 'Delivered', 'Cancelled'
+    'All Orders', 'Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'
   ];
 
   const filteredOrders = userOrders.filter(order => {
@@ -41,7 +40,7 @@ export default function Orders() {
     
     if (activeFilter === 'All Orders') return matchesSearch;
     if (activeFilter === 'Pending') return matchesSearch && order.status === 'pending';
-    if (activeFilter === 'Confirmed') return matchesSearch && order.status === 'processing';
+    if (activeFilter === 'Processing') return matchesSearch && order.status === 'processing';
     if (activeFilter === 'Shipped') return matchesSearch && order.status === 'shipped';
     if (activeFilter === 'Delivered') return matchesSearch && order.status === 'completed';
     if (activeFilter === 'Cancelled') return matchesSearch && order.status === 'cancelled';
@@ -63,7 +62,7 @@ export default function Orders() {
   const getStatusText = (status: string) => {
     switch (status) {
       case 'pending': return 'Pending';
-      case 'processing': return 'Confirmed';
+      case 'processing': return 'Processing';
       case 'shipped': return 'Shipped';
       case 'completed': return 'Delivered';
       case 'cancelled': return 'Cancelled';
