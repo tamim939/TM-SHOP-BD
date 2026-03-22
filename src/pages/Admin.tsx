@@ -23,7 +23,8 @@ import {
   Send,
   Star,
   Ticket,
-  Home
+  Home,
+  Camera
 } from 'lucide-react';
 import { useStore } from '../context/StoreContext';
 import { useNavigate } from 'react-router-dom';
@@ -75,6 +76,7 @@ const Admin: React.FC = () => {
   const [isEditingSlider, setIsEditingSlider] = useState<any>(null);
   const [isEditingCoupon, setIsEditingCoupon] = useState<any>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const [showProductForm, setShowProductForm] = useState(false);
   const [showCategoryForm, setShowCategoryForm] = useState(false);
   const [showSliderForm, setShowSliderForm] = useState(false);
@@ -139,6 +141,20 @@ const Admin: React.FC = () => {
       </div>
     );
   }
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, callback: (url: string) => void) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64String = reader.result as string;
+      callback(base64String);
+      setIsUploading(false);
+    };
+    reader.readAsDataURL(file);
+  };
 
   const handleSaveProduct = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -903,13 +919,24 @@ const Admin: React.FC = () => {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Image URL (Main)</label>
-                      <input
-                        type="text"
-                        value={formData.image}
-                        onChange={e => setFormData({ ...formData, image: e.target.value })}
-                        placeholder="Main image URL"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
-                      />
+                      <div className="flex space-x-2">
+                        <input
+                          type="text"
+                          value={formData.image}
+                          onChange={e => setFormData({ ...formData, image: e.target.value })}
+                          placeholder="Main image URL"
+                          className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
+                        />
+                        <label className="cursor-pointer p-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center">
+                          <Camera className="w-5 h-5" />
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={e => handleImageUpload(e, (url) => setFormData({ ...formData, image: url }))}
+                          />
+                        </label>
+                      </div>
                     </div>
 
                     <div>
@@ -939,6 +966,19 @@ const Admin: React.FC = () => {
                               placeholder={`Image ${index + 1} URL`}
                               className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none text-sm"
                             />
+                            <label className="cursor-pointer p-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center">
+                              <Camera className="w-4 h-4" />
+                              <input
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                onChange={e => handleImageUpload(e, (url) => {
+                                  const newImages = [...formData.images];
+                                  newImages[index] = url;
+                                  setFormData({ ...formData, images: newImages });
+                                })}
+                              />
+                            </label>
                             <button
                               type="button"
                               onClick={() => {
@@ -1008,10 +1048,10 @@ const Admin: React.FC = () => {
                       </button>
                       <button
                         type="submit"
-                        disabled={isSaving}
+                        disabled={isSaving || isUploading}
                         className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 font-bold"
                       >
-                        {isSaving ? 'Saving...' : 'Save'}
+                        {isSaving || isUploading ? 'Saving...' : 'Save'}
                       </button>
                     </div>
                   </form>
@@ -1131,13 +1171,24 @@ const Admin: React.FC = () => {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Image URL (Optional)</label>
-                      <input
-                        type="text"
-                        value={categoryData.image}
-                        onChange={e => setCategoryData({ ...categoryData, image: e.target.value })}
-                        placeholder="Default image will be used if not provided"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
-                      />
+                      <div className="flex space-x-2">
+                        <input
+                          type="text"
+                          value={categoryData.image}
+                          onChange={e => setCategoryData({ ...categoryData, image: e.target.value })}
+                          placeholder="Default image will be used if not provided"
+                          className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
+                        />
+                        <label className="cursor-pointer p-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center">
+                          <Camera className="w-5 h-5" />
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={e => handleImageUpload(e, (url) => setCategoryData({ ...categoryData, image: url }))}
+                          />
+                        </label>
+                      </div>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
@@ -1174,10 +1225,10 @@ const Admin: React.FC = () => {
                       </button>
                       <button
                         type="submit"
-                        disabled={isSaving}
+                        disabled={isSaving || isUploading}
                         className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 font-bold"
                       >
-                        {isSaving ? 'Saving...' : 'Save'}
+                        {isSaving || isUploading ? 'Saving...' : 'Save'}
                       </button>
                     </div>
                   </form>
@@ -1241,22 +1292,44 @@ const Admin: React.FC = () => {
                   <form onSubmit={handleSaveSlider} className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Desktop Image URL</label>
-                      <input
-                        type="text"
-                        required
-                        value={sliderData.image}
-                        onChange={e => setSliderData({ ...sliderData, image: e.target.value })}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
-                      />
+                      <div className="flex space-x-2">
+                        <input
+                          type="text"
+                          required
+                          value={sliderData.image}
+                          onChange={e => setSliderData({ ...sliderData, image: e.target.value })}
+                          className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
+                        />
+                        <label className="cursor-pointer p-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center">
+                          <Camera className="w-5 h-5" />
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={e => handleImageUpload(e, (url) => setSliderData({ ...sliderData, image: url }))}
+                          />
+                        </label>
+                      </div>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Mobile Image URL (Optional)</label>
-                      <input
-                        type="text"
-                        value={sliderData.mobileImage}
-                        onChange={e => setSliderData({ ...sliderData, mobileImage: e.target.value })}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
-                      />
+                      <div className="flex space-x-2">
+                        <input
+                          type="text"
+                          value={sliderData.mobileImage}
+                          onChange={e => setSliderData({ ...sliderData, mobileImage: e.target.value })}
+                          className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
+                        />
+                        <label className="cursor-pointer p-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center">
+                          <Camera className="w-5 h-5" />
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={e => handleImageUpload(e, (url) => setSliderData({ ...sliderData, mobileImage: url }))}
+                          />
+                        </label>
+                      </div>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Link (Optional)</label>
@@ -1278,10 +1351,10 @@ const Admin: React.FC = () => {
                       </button>
                       <button
                         type="submit"
-                        disabled={isSaving}
+                        disabled={isSaving || isUploading}
                         className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
                       >
-                        {isSaving ? 'Saving...' : 'Save'}
+                        {isSaving || isUploading ? 'Saving...' : 'Save'}
                       </button>
                     </div>
                   </form>
@@ -1387,10 +1460,10 @@ const Admin: React.FC = () => {
                       </button>
                       <button
                         type="submit"
-                        disabled={isSaving}
+                        disabled={isSaving || isUploading}
                         className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 font-bold"
                       >
-                        {isSaving ? 'Saving...' : 'Save'}
+                        {isSaving || isUploading ? 'Saving...' : 'Save'}
                       </button>
                     </div>
                   </form>
@@ -1631,9 +1704,10 @@ const Admin: React.FC = () => {
                   const form = document.getElementById('settings-form') as HTMLFormElement;
                   if (form) form.requestSubmit();
                 }}
-                className="bg-red-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-red-700 transition-all shadow-lg shadow-red-200"
+                disabled={isSaving || isUploading}
+                className="bg-red-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-red-700 transition-all shadow-lg shadow-red-200 disabled:opacity-50"
               >
-                Save Settings
+                {isSaving || isUploading ? 'Saving...' : 'Save Settings'}
               </button>
             </div>
             <div className="bg-white rounded-2xl border border-gray-100 p-8 max-w-2xl shadow-sm">
@@ -1650,14 +1724,25 @@ const Admin: React.FC = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Website Logo (Link)</label>
-                  <input
-                    type="text"
-                    value={settings.logo || ''}
-                    onChange={e => updateSettings({ ...settings, logo: e.target.value })}
-                    placeholder="https://example.com/logo.png"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
-                  />
-                  <p className="text-xs text-gray-400 mt-1">Provide a direct image link to change the logo.</p>
+                  <div className="flex space-x-2">
+                    <input
+                      type="text"
+                      value={settings.logo || ''}
+                      onChange={e => updateSettings({ ...settings, logo: e.target.value })}
+                      placeholder="https://example.com/logo.png"
+                      className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
+                    />
+                    <label className="cursor-pointer p-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center">
+                      <Camera className="w-5 h-5" />
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={e => handleImageUpload(e, (url) => updateSettings({ ...settings, logo: url }))}
+                      />
+                    </label>
+                  </div>
+                  <p className="text-xs text-gray-400 mt-1">Provide a direct image link or upload to change the logo.</p>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
@@ -1790,14 +1875,25 @@ const Admin: React.FC = () => {
                   <div className="space-y-4 mb-6">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Payment Gateway Image (Link)</label>
-                      <input
-                        type="text"
-                        value={settings.paymentGatewayImage || ''}
-                        onChange={e => updateSettings({ ...settings, paymentGatewayImage: e.target.value })}
-                        placeholder="https://example.com/payment-gateways.png"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
-                      />
-                      <p className="text-xs text-gray-400 mt-1">Provide a direct image link for the payment gateway logos in the footer.</p>
+                      <div className="flex space-x-2">
+                        <input
+                          type="text"
+                          value={settings.paymentGatewayImage || ''}
+                          onChange={e => updateSettings({ ...settings, paymentGatewayImage: e.target.value })}
+                          placeholder="https://example.com/payment-gateways.png"
+                          className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
+                        />
+                        <label className="cursor-pointer p-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center">
+                          <Camera className="w-5 h-5" />
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={e => handleImageUpload(e, (url) => updateSettings({ ...settings, paymentGatewayImage: url }))}
+                          />
+                        </label>
+                      </div>
+                      <p className="text-xs text-gray-400 mt-1">Provide a direct image link or upload for the payment gateway logos in the footer.</p>
                     </div>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

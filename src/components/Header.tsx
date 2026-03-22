@@ -238,35 +238,53 @@ export default function Header() {
                 </button>
               </div>
               
-              <nav className="flex flex-col">
-                <Link 
-                  to="/" 
-                  className="px-4 py-4 text-[16px] font-medium text-gray-800 border-b hover:bg-gray-50 transition-colors" 
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Home
-                </Link>
-                <Link 
-                  to="/shop" 
-                  className="px-4 py-4 text-[16px] font-medium text-gray-800 border-b hover:bg-gray-50 transition-colors" 
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Shop
-                </Link>
-                <Link 
-                  to="/orders" 
-                  className="px-4 py-4 text-[16px] font-medium text-gray-800 border-b hover:bg-gray-50 transition-colors" 
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  My Orders
-                </Link>
-                <Link 
-                  to="/profile" 
-                  className="px-4 py-4 text-[16px] font-medium text-gray-800 border-b hover:bg-gray-50 transition-colors" 
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  My Profile
-                </Link>
+              <nav className="flex-1 overflow-y-auto">
+                <div className="flex flex-col">
+                  <Link 
+                    to="/" 
+                    className="px-4 py-4 text-[16px] font-bold text-gray-800 border-b hover:bg-gray-50 transition-colors" 
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Home
+                  </Link>
+                  <Link 
+                    to="/shop" 
+                    className="px-4 py-4 text-[16px] font-bold text-gray-800 border-b hover:bg-gray-50 transition-colors" 
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Shop
+                  </Link>
+                  
+                  {/* Categories in Menu */}
+                  <div className="bg-gray-50/50 py-2 border-b">
+                    <p className="px-4 py-2 text-[10px] font-black text-gray-400 uppercase tracking-widest">Categories</p>
+                    {useStore().categories.map(category => (
+                      <Link
+                        key={category.id}
+                        to={`/category/${category.slug}`}
+                        className="px-6 py-3 text-[14px] font-bold text-gray-700 block hover:bg-gray-100 transition-colors"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                      >
+                        {category.name}
+                      </Link>
+                    ))}
+                  </div>
+
+                  <Link 
+                    to="/orders" 
+                    className="px-4 py-4 text-[16px] font-bold text-gray-800 border-b hover:bg-gray-50 transition-colors" 
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    My Orders
+                  </Link>
+                  <Link 
+                    to="/profile" 
+                    className="px-4 py-4 text-[16px] font-bold text-gray-800 border-b hover:bg-gray-50 transition-colors" 
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    My Profile
+                  </Link>
+                </div>
               </nav>
             </motion.div>
           </>
