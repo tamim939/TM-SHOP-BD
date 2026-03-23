@@ -12,6 +12,7 @@ import Wishlist from './pages/Wishlist';
 import Cart from './pages/Cart';
 import Profile from './pages/Profile';
 import Orders from './pages/Orders';
+import OrderDetail from './pages/OrderDetail';
 import ScrollToTop from './components/ScrollToTop';
 import BottomNav from './components/BottomNav';
 import LoadingScreen from './components/LoadingScreen';
@@ -39,6 +40,7 @@ function Layout() {
           <Route path="/cart" element={<Cart />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/orders" element={<Orders />} />
+          <Route path="/order/:id" element={<OrderDetail />} />
         </Routes>
       </main>
       {!isAdminPage && <Footer />}

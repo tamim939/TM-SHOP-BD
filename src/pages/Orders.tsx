@@ -166,12 +166,12 @@ export default function Orders() {
                           <p className="text-sm font-bold text-gray-900">BDT {order.totalAmount}</p>
                         </td>
                         <td className="py-4 text-right">
-                          <button 
-                            onClick={() => setSelectedOrder(order)}
+                          <Link 
+                            to={`/order/${order.id}`}
                             className="text-red-500 hover:text-red-600 text-sm font-bold transition-colors"
                           >
                             View
-                          </button>
+                          </Link>
                         </td>
                       </tr>
                     ))
@@ -179,135 +179,6 @@ export default function Orders() {
                 </tbody>
               </table>
             </div>
-
-            {/* Order Detail Modal */}
-            {selectedOrder && (
-              <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-                <motion.div 
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="bg-white rounded-3xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl"
-                >
-                  <div className="p-6 border-b sticky top-0 bg-white z-10 flex items-center justify-between">
-                    <h2 className="text-xl font-black">Order Details</h2>
-                    <button 
-                      onClick={() => setSelectedOrder(null)}
-                      className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-                    >
-                      <XCircle size={24} className="text-gray-400" />
-                    </button>
-                  </div>
-                  
-                  <div className="p-6 space-y-6">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Order ID</p>
-                        <p className="font-black text-lg">#{selectedOrder.id.toUpperCase()}</p>
-                      </div>
-                      <div className={`px-4 py-2 rounded-full text-xs font-black uppercase tracking-wider ${getStatusColor(selectedOrder.status)}`}>
-                        {getStatusText(selectedOrder.status)}
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Date</p>
-                        <p className="font-bold text-sm">{new Date(selectedOrder.createdAt).toLocaleDateString()}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Payment</p>
-                        <p className="font-bold text-sm uppercase">{selectedOrder.paymentMethod || 'COD'}</p>
-                      </div>
-                    </div>
-
-                    {selectedOrder.paymentMethod !== 'cod' && (
-                      <div className="bg-red-50 p-4 rounded-2xl border border-red-100 space-y-3">
-                        <div className="flex justify-between items-center">
-                          <p className="text-xs font-bold text-red-600 uppercase tracking-widest">Payment Status</p>
-                          <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-                            selectedOrder.paymentStatus === 'awaiting-verification' ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'
-                          }`}>
-                            {selectedOrder.paymentStatus?.replace('-', ' ')}
-                          </span>
-                        </div>
-                        <div className="grid grid-cols-2 gap-4 pt-2 border-t border-red-100">
-                          <div>
-                            <p className="text-[10px] font-bold text-red-400 uppercase">Advance Paid</p>
-                            <p className="font-black text-red-600">Tk {selectedOrder.advanceAmount}</p>
-                          </div>
-                          <div>
-                            <p className="text-[10px] font-bold text-red-400 uppercase">Due Amount</p>
-                            <p className="font-black text-red-600">Tk {selectedOrder.dueAmount}</p>
-                          </div>
-                        </div>
-                        <div className="pt-2 border-t border-red-100">
-                          <p className="text-[10px] font-bold text-red-400 uppercase">Transaction Info</p>
-                          <p className="text-xs font-bold text-red-700">Phone: {selectedOrder.paymentPhone}</p>
-                          <p className="text-xs font-bold text-red-700">TxID: {selectedOrder.transactionId}</p>
-                        </div>
-                      </div>
-                    )}
-
-                    <div className="space-y-4">
-                      <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Shipping Address</p>
-                      <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100">
-                        <p className="font-bold text-gray-900">{selectedOrder.customerName}</p>
-                        <p className="text-sm text-gray-600">{selectedOrder.customerPhone}</p>
-                        <p className="text-sm text-gray-600 mt-1">{selectedOrder.customerAddress}</p>
-                      </div>
-                    </div>
-
-                    <div className="space-y-4">
-                      <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Items</p>
-                      <div className="space-y-3">
-                        {selectedOrder.items.map((item: any, idx: number) => (
-                          <div key={idx} className="flex items-center space-x-4 bg-gray-50 p-3 rounded-2xl">
-                            <div className="w-16 h-16 bg-white rounded-xl overflow-hidden shrink-0 border border-gray-100">
-                              <img src={item.image} alt="" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-                            </div>
-                            <div className="flex-grow">
-                              <p className="font-bold text-sm line-clamp-1">{item.name}</p>
-                              <p className="text-xs text-gray-400">Qty: {item.quantity} {item.size && `| Size: ${item.size}`}</p>
-                              <p className="font-black text-red-600 text-sm">Tk {item.price * item.quantity}</p>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="pt-6 border-t space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span className="text-gray-500 font-bold">Subtotal</span>
-                        <span className="font-black">Tk {selectedOrder.totalAmount - (selectedOrder.deliveryCharge || 0) + (selectedOrder.discountAmount || 0)}</span>
-                      </div>
-                      <div className="flex justify-between text-sm">
-                        <span className="text-gray-500 font-bold">Shipping</span>
-                        <span className="font-black">Tk {selectedOrder.deliveryCharge || 0}</span>
-                      </div>
-                      {selectedOrder.discountAmount > 0 && (
-                        <div className="flex justify-between text-sm text-red-600">
-                          <span className="font-bold">Discount</span>
-                          <span className="font-black">- Tk {selectedOrder.discountAmount}</span>
-                        </div>
-                      )}
-                      <div className="flex justify-between text-lg pt-2 border-t">
-                        <span className="font-black">Total Amount</span>
-                        <span className="font-black text-red-600">Tk {selectedOrder.totalAmount}</span>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="p-6 bg-gray-50 rounded-b-3xl">
-                    <button 
-                      onClick={() => setSelectedOrder(null)}
-                      className="w-full bg-gray-900 text-white py-4 rounded-2xl font-black hover:bg-black transition-all"
-                    >
-                      Close
-                    </button>
-                  </div>
-                </motion.div>
-              </div>
-            )}
 
             {/* Pagination */}
             {filteredOrders.length > 0 && (

@@ -5,8 +5,6 @@ import { auth } from '../firebase';
 import { signOut } from 'firebase/auth';
 import { useNavigate, Link } from 'react-router-dom';
 import AuthModal from '../components/AuthModal';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
 import { Order } from '../types';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -80,46 +78,6 @@ export default function Profile() {
     } catch (error) {
       alert('Error updating name.');
     }
-  };
-
-  const generateOrderPDF = (order: Order) => {
-    const doc = new jsPDF();
-    
-    doc.setFontSize(20);
-    doc.setTextColor(220, 38, 38);
-    doc.text('TM SHOP BD', 105, 20, { align: 'center' });
-    
-    doc.setFontSize(12);
-    doc.setTextColor(100);
-    doc.text('Invoice / Order Details', 105, 30, { align: 'center' });
-    
-    doc.setTextColor(0);
-    doc.setFontSize(10);
-    doc.text(`Order ID: #${order.id.toUpperCase()}`, 20, 45);
-    doc.text(`Date: ${new Date(order.createdAt).toLocaleDateString()}`, 20, 52);
-    doc.text(`Status: ${order.status}`, 20, 59);
-    
-    doc.text('Customer Details:', 140, 45);
-    doc.text(`Name: ${order.customerName}`, 140, 52);
-    doc.text(`Phone: ${order.customerPhone || ''}`, 140, 59);
-    doc.text(`Address: ${order.customerAddress || ''}`, 140, 66, { maxWidth: 50 });
-    
-    autoTable(doc, {
-      startY: 80,
-      head: [['Product', 'Size', 'Price', 'Qty', 'Total']],
-      body: order.items.map(item => [
-        item.name,
-        item.size,
-        `Tk ${item.price}`,
-        item.quantity,
-        `Tk ${item.price * item.quantity}`
-      ]),
-      foot: [['', '', '', 'Total Amount', `Tk ${order.totalAmount}`]],
-      theme: 'striped',
-      headStyles: { fillColor: [220, 38, 38] }
-    });
-    
-    doc.save(`invoice-${order.id.slice(-8)}.pdf`);
   };
 
   const getStatusIcon = (status: string) => {
@@ -270,13 +228,13 @@ export default function Profile() {
                           {getStatusText(order.status)}
                         </span>
                       </div>
-                      <button 
-                        onClick={() => generateOrderPDF(order)}
-                        className="p-2 text-gray-400 hover:text-red-600 transition-colors"
-                        title="Download Invoice"
+                      <Link 
+                        to={`/order/${order.id}`}
+                        className="flex items-center space-x-1 text-red-600 font-bold text-sm hover:underline"
                       >
-                        <Download size={20} />
-                      </button>
+                        <span>View Details</span>
+                        <ChevronRight size={16} />
+                      </Link>
                     </div>
                   </div>
                 </div>
