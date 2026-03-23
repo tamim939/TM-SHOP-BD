@@ -152,16 +152,12 @@ export default function Profile() {
           <div className="relative mb-6 group">
             <div className="w-28 h-28 lg:w-32 lg:h-32 rounded-full overflow-hidden border-4 border-white shadow-xl ring-1 ring-gray-100">
               <img 
-                src={user?.photoURL || 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y'} 
+                src={userPhoto || 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y'} 
                 alt={userName}
                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                 referrerPolicy="no-referrer"
               />
             </div>
-            <label className="absolute bottom-1 right-1 p-2.5 bg-red-600 text-white rounded-full cursor-pointer shadow-lg hover:bg-red-700 transition-all active:scale-90">
-              <Camera size={18} />
-              <input type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} />
-            </label>
           </div>
           
           <div className="mb-8">

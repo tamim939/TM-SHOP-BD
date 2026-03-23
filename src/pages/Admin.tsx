@@ -542,31 +542,6 @@ const Admin: React.FC = () => {
                 className="w-20 h-20 rounded-full object-cover border-2 border-red-100 group-hover:border-red-500 transition-all"
                 referrerPolicy="no-referrer"
               />
-              <label className="absolute bottom-0 right-0 p-1.5 bg-red-600 text-white rounded-full cursor-pointer hover:bg-red-700 transition-all shadow-sm">
-                <Camera size={12} />
-                <input 
-                  type="file" 
-                  accept="image/*" 
-                  className="hidden" 
-                  onChange={async (e) => {
-                    const file = e.target.files?.[0];
-                    if (!file) return;
-                    setIsUploading(true);
-                    try {
-                      const reader = new FileReader();
-                      reader.onloadend = async () => {
-                        const base64String = reader.result as string;
-                        await updateUserProfile({ photoURL: base64String });
-                        setIsUploading(false);
-                      };
-                      reader.readAsDataURL(file);
-                    } catch (error) {
-                      console.error("Error updating profile photo:", error);
-                      setIsUploading(false);
-                    }
-                  }} 
-                />
-              </label>
             </div>
             <h2 className="font-bold text-gray-800 line-clamp-1">{user?.displayName || 'Admin'}</h2>
             <p className="text-[10px] text-gray-400 uppercase tracking-widest font-bold mt-1">Administrator</p>
