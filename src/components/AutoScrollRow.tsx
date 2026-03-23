@@ -52,7 +52,7 @@ const AutoScrollRow: React.FC<AutoScrollRowProps> = ({ children }) => {
   return (
     <div 
       ref={scrollRef}
-      className="flex overflow-x-auto pb-6 gap-4 lg:gap-6 no-scrollbar -mx-4 px-4 lg:mx-0 lg:px-0 scroll-smooth"
+      className="flex overflow-x-auto pb-2 gap-4 lg:gap-6 no-scrollbar -mx-4 px-4 lg:mx-0 lg:px-0 scroll-smooth"
       style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
     >
       {children}

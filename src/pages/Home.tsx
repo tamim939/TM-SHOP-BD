@@ -38,9 +38,9 @@ export default function Home() {
         if (categoryProducts.length === 0) return null;
 
         return (
-          <section key={category.id} className="py-12 border-t border-gray-100 bg-gray-50/30">
+          <section key={category.id} className="pt-4 pb-4 border-b border-gray-100 bg-gray-50/30">
             <div className="container">
-              <div className="mb-8 flex items-center justify-between">
+              <div className="mb-3 flex items-center justify-between">
                 <div>
                   <h2 className="text-2xl font-bold uppercase tracking-tight text-gray-900">{category.name}</h2>
                   <div className="w-12 h-1 bg-red-600 mt-2"></div>
