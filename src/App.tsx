@@ -15,27 +15,15 @@ import Orders from './pages/Orders';
 import OrderDetail from './pages/OrderDetail';
 import ScrollToTop from './components/ScrollToTop';
 import BottomNav from './components/BottomNav';
-import LoadingScreen from './components/LoadingScreen';
 import { StoreProvider, useStore } from './context/StoreContext';
 
 import { useState, useEffect } from 'react';
 
 function Layout() {
-  const { settings, isAppReady } = useStore();
-  const [showLoading, setShowLoading] = useState(true);
+  const { settings } = useStore();
   const location = window.location.pathname;
   const isAdminPage = location === '/admin';
   const hasNotice = settings.showNotice && settings.noticeText && settings.noticeText.trim() !== '';
-
-  useEffect(() => {
-    if (isAppReady) {
-      setShowLoading(false);
-    }
-  }, [isAppReady]);
-
-  if (showLoading && !isAppReady) {
-    return <LoadingScreen />;
-  }
 
   return (
     <div className="min-h-screen flex flex-col">
