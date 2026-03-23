@@ -268,7 +268,10 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         const categoryList = Object.keys(data).map(key => ({
           ...data[key],
           id: key
-        })).sort((a, b) => a.name.localeCompare(b.name));
+        }))
+        .filter(cat => ['Panjabi', 'Pajama'].includes(cat.name))
+        .sort((a, b) => a.name.localeCompare(b.name));
+        
         setCategories(categoryList);
         localStorage.setItem('tm_shop_categories', JSON.stringify(categoryList));
       } else {

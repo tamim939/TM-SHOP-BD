@@ -28,13 +28,15 @@ function Layout() {
   const hasNotice = settings.showNotice && settings.noticeText && settings.noticeText.trim() !== '';
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowLoading(false);
-    }, 1000); // 1 second loading as requested
-    return () => clearTimeout(timer);
-  }, []);
+    if (isAppReady) {
+      const timer = setTimeout(() => {
+        setShowLoading(false);
+      }, 500); // Shorter delay if ready
+      return () => clearTimeout(timer);
+    }
+  }, [isAppReady]);
 
-  if (showLoading || !isAppReady) {
+  if (showLoading && !isAppReady) {
     return <LoadingScreen />;
   }
 

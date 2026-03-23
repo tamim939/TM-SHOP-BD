@@ -373,7 +373,36 @@ export default function ProductDetail() {
             </div>
           </div>
         </div>
+
+        {/* Related Products Section */}
+        <RelatedProducts currentProduct={product} allProducts={products} />
       </div>
     </div>
   );
 }
+
+function RelatedProducts({ currentProduct, allProducts }: { currentProduct: any, allProducts: any[] }) {
+  const related = allProducts
+    .filter(p => p.id !== currentProduct.id && (p.category === currentProduct.category))
+    .slice(0, 4);
+
+  if (related.length === 0) return null;
+
+  return (
+    <div className="mt-12 mb-12">
+      <div className="flex items-center justify-between mb-6 px-4 sm:px-0">
+        <div>
+          <h2 className="text-xl font-black uppercase tracking-tight text-gray-900">Related Products</h2>
+          <div className="w-12 h-1 bg-red-600 mt-2"></div>
+        </div>
+      </div>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 px-4 sm:px-0">
+        {related.map((product) => (
+          <ProductCard key={product.id} product={product} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+import ProductCard from '../components/ProductCard';
