@@ -98,15 +98,36 @@ const generateSlug = (text: string) => {
 export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [products, setProducts] = useState<Product[]>(() => {
     const saved = localStorage.getItem('tm_shop_products');
-    return saved ? JSON.parse(saved) : [];
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error('Error parsing products:', e);
+      }
+    }
+    return [];
   });
   const [categories, setCategories] = useState<Category[]>(() => {
     const saved = localStorage.getItem('tm_shop_categories');
-    return saved ? JSON.parse(saved) : [];
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error('Error parsing categories:', e);
+      }
+    }
+    return [];
   });
   const [sliders, setSliders] = useState<Slider[]>(() => {
     const saved = localStorage.getItem('tm_shop_sliders');
-    return saved ? JSON.parse(saved) : [];
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error('Error parsing sliders:', e);
+      }
+    }
+    return [];
   });
   const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
@@ -156,11 +177,25 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const ADMIN_EMAILS = ['rsjonayed07@gmail.com', 'tamimbhai23@gmail.com'];
   const [cart, setCart] = useState<OrderItem[]>(() => {
     const saved = localStorage.getItem('panjabi_cart');
-    return saved ? JSON.parse(saved) : [];
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error('Error parsing cart:', e);
+      }
+    }
+    return [];
   });
   const [wishlist, setWishlist] = useState<string[]>(() => {
     const saved = localStorage.getItem('panjabi_wishlist');
-    return saved ? JSON.parse(saved) : [];
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error('Error parsing wishlist:', e);
+      }
+    }
+    return [];
   });
 
   // Auth State

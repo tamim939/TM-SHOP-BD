@@ -15,6 +15,7 @@ import Orders from './pages/Orders';
 import OrderDetail from './pages/OrderDetail';
 import ScrollToTop from './components/ScrollToTop';
 import BottomNav from './components/BottomNav';
+import LoadingScreen from './components/LoadingScreen';
 import { StoreProvider, useStore } from './context/StoreContext';
 
 import { useState, useEffect } from 'react';
@@ -40,7 +41,7 @@ function Layout() {
   return (
     <div className="min-h-screen flex flex-col">
       {!isAdminPage && <Header />}
-      <main className={`flex-grow relative min-h-[400px] ${!isAdminPage ? (hasNotice ? 'pt-28 lg:pt-32' : 'pt-16 lg:pt-20') : ''}`}>
+      <main className={`flex-grow relative min-h-[80vh] ${!isAdminPage ? (hasNotice ? 'pt-28 lg:pt-32' : 'pt-16 lg:pt-20') : ''}`}>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/shop" element={<Shop />} />

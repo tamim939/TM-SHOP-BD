@@ -6,7 +6,13 @@ export default function CategorySection() {
   const { categories, categoriesLoaded } = useStore();
 
   if (!categoriesLoaded) {
-    return null;
+    return (
+      <section className="pt-6 pb-2 bg-white border-b border-gray-100">
+        <div className="container px-4">
+          <div className="h-24 w-full bg-gray-50 rounded-2xl animate-pulse" />
+        </div>
+      </section>
+    );
   }
 
   if (categories.length === 0) return null;

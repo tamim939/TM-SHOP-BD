@@ -12,11 +12,11 @@ export default function Footer() {
         <div className="text-center mb-12">
           <h3 className="text-lg font-bold mb-2">Secure Payment Gateway</h3>
           <div className="w-12 h-1 bg-gray-200 mx-auto mb-6"></div>
-          <div className="max-w-md mx-auto">
+          <div className="max-w-md mx-auto aspect-[3/1] bg-gray-50 rounded-lg overflow-hidden">
             <img 
               src={settings.paymentGatewayImage} 
               alt="Payment Gateways" 
-              className="w-full h-auto rounded-lg shadow-sm" 
+              className="w-full h-full object-contain shadow-sm" 
               referrerPolicy="no-referrer" 
             />
           </div>
