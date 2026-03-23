@@ -19,10 +19,14 @@ import LoadingScreen from './components/LoadingScreen';
 import { StoreProvider, useStore } from './context/StoreContext';
 
 function Layout() {
-  const { settings } = useStore();
+  const { settings, isAppReady } = useStore();
   const location = window.location.pathname;
   const isAdminPage = location === '/admin';
   const hasNotice = settings.showNotice && settings.noticeText && settings.noticeText.trim() !== '';
+
+  if (!isAppReady) {
+    return <LoadingScreen />;
+  }
 
   return (
     <div className="min-h-screen flex flex-col">

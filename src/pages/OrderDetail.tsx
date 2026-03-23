@@ -7,7 +7,7 @@ import { motion } from 'motion/react';
 export default function OrderDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { orders, authLoading, user } = useStore();
+  const { orders, authLoading, user, isAdmin } = useStore();
 
   if (authLoading) {
     return (
@@ -19,7 +19,7 @@ export default function OrderDetail() {
 
   const order = orders.find(o => o.id === id);
 
-  if (!order || (user && order.userId !== user.uid && !['rsjonayed07@gmail.com', 'tamimbhai23@gmail.com'].includes(user.email || ''))) {
+  if (!order || (user && order.userId !== user.uid && !isAdmin)) {
     return (
       <div className="min-h-screen bg-gray-50 pt-24 pb-12 flex flex-col items-center justify-center px-4">
         <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 text-center max-w-md w-full">
