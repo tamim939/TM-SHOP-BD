@@ -342,19 +342,28 @@ export default function ProductDetail() {
                       </p>
 
                       {review.adminReply && (
-                        <div className="mt-4 bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
-                          <div className="flex items-center space-x-2 mb-2">
-                            <div className="w-6 h-6 bg-red-600 rounded-lg flex items-center justify-center text-white text-[10px] font-black">
-                              A
+                        <div className="mt-4 ml-4 lg:ml-8 relative">
+                          <div className="absolute -left-4 top-0 bottom-0 w-0.5 bg-red-100 rounded-full"></div>
+                          <div className="bg-white p-5 rounded-2xl border border-red-50 shadow-sm relative">
+                            <div className="absolute -left-2 top-6 w-4 h-4 bg-white border-l border-b border-red-50 rotate-45"></div>
+                            <div className="flex items-center justify-between mb-3">
+                              <div className="flex items-center space-x-2">
+                                <div className="w-7 h-7 bg-red-600 rounded-lg flex items-center justify-center text-white shadow-lg shadow-red-100">
+                                  <ShieldCheck size={14} />
+                                </div>
+                                <div>
+                                  <p className="text-xs font-black text-red-600 uppercase tracking-wider">Store Owner</p>
+                                  <p className="text-[10px] text-gray-400 font-bold">Official Reply</p>
+                                </div>
+                              </div>
+                              <span className="text-[10px] text-gray-400 font-bold bg-gray-50 px-2 py-1 rounded-md">
+                                {review.adminReplyAt && new Date(review.adminReplyAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                              </span>
                             </div>
-                            <p className="text-xs font-black text-red-700">Admin Reply</p>
-                            <span className="text-[10px] text-gray-400 font-bold">
-                              {review.adminReplyAt && new Date(review.adminReplyAt).toLocaleDateString('en-US')}
-                            </span>
+                            <p className="text-sm text-gray-700 font-medium leading-relaxed italic">
+                              "{review.adminReply}"
+                            </p>
                           </div>
-                          <p className="text-sm text-gray-700 italic font-medium">
-                            {review.adminReply}
-                          </p>
                         </div>
                       )}
                     </div>

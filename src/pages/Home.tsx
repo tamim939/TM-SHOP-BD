@@ -65,6 +65,33 @@ export default function Home() {
           </section>
         );
       })}
+
+      {/* Uncategorized Products */}
+      {uncategorizedProducts.length > 0 && (
+        <section className="pt-4 pb-12 bg-white">
+          <div className="container">
+            <div className="mb-6 flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold uppercase tracking-tight text-gray-900">Featured Products</h2>
+                <div className="w-12 h-1 bg-red-600 mt-2"></div>
+              </div>
+              <Link 
+                to="/shop" 
+                className="text-red-600 font-bold flex items-center space-x-1 hover:underline text-sm"
+              >
+                <span>Shop All</span>
+                <ArrowRight size={16} />
+              </Link>
+            </div>
+            
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+              {uncategorizedProducts.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
     </div>
   );
 }
