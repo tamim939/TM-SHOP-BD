@@ -102,7 +102,7 @@ export default function Header() {
 
         {/* Search Bar - Integrated */}
         <div className="hidden md:flex flex-1 justify-center relative mx-4">
-          <div className="relative w-full max-w-xl">
+          <div className="relative w-full max-w-2xl">
             <input 
               type="text" 
               placeholder="Search products..." 
@@ -132,7 +132,7 @@ export default function Header() {
 
         {/* Mobile Search Bar */}
         <div className="md:hidden flex-1 flex flex-col items-center px-2 space-y-2">
-          <div className="relative w-full max-w-[280px]">
+          <div className="relative w-full max-w-full">
             <input 
               type="text" 
               placeholder="Search..." 
@@ -148,17 +148,19 @@ export default function Header() {
             />
           </div>
           {searchQuery && (
-            <button
-              onClick={() => {
-                if (searchQuery.trim()) {
-                  navigate(`/shop?q=${searchQuery}`);
-                  setSearchQuery('');
-                }
-              }}
-              className="bg-red-600 text-white px-6 py-1.5 rounded-full text-[10px] font-bold shadow-sm"
-            >
-              Search
-            </button>
+            <div className="flex justify-center w-full">
+              <button
+                onClick={() => {
+                  if (searchQuery.trim()) {
+                    navigate(`/shop?q=${searchQuery}`);
+                    setSearchQuery('');
+                  }
+                }}
+                className="bg-red-600 text-white px-8 py-2 rounded-full text-xs font-bold shadow-lg shadow-red-100 active:scale-95 transition-all"
+              >
+                Search
+              </button>
+            </div>
           )}
         </div>
 

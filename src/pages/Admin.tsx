@@ -1796,6 +1796,19 @@ const Admin: React.FC = () => {
                       </div>
                       <p className="text-xs text-gray-400 mt-1">Provide a direct image link or upload for the payment gateway logos in the footer.</p>
                     </div>
+                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                      <div>
+                        <p className="font-bold text-gray-800">Show Payment Gateway Image</p>
+                        <p className="text-xs text-gray-500">Enable or disable the payment gateway logos in the footer</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setLocalSettings({ ...localSettings, showPaymentGateway: !localSettings.showPaymentGateway })}
+                        className={`w-14 h-8 rounded-full transition-all relative ${localSettings.showPaymentGateway ? 'bg-red-600' : 'bg-gray-300'}`}
+                      >
+                        <div className={`absolute top-1 w-6 h-6 bg-white rounded-full transition-all ${localSettings.showPaymentGateway ? 'left-7' : 'left-1'}`}  />
+                      </button>
+                    </div>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>

@@ -156,6 +156,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       advancePaymentPercentage: 70,
       showNotice: false,
       noticeText: '',
+      showPaymentGateway: true,
       facebookLink: 'https://facebook.com',
       twitterLink: 'https://twitter.com',
       youtubeLink: 'https://youtube.com',

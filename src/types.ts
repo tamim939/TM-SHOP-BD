@@ -129,6 +129,7 @@ export interface Settings {
   advancePaymentPercentage?: number;
   showNotice?: boolean;
   noticeText?: string;
+  showPaymentGateway?: boolean;
   facebookLink?: string;
   twitterLink?: string;
   youtubeLink?: string;
