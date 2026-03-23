@@ -6,20 +6,7 @@ export default function CategorySection() {
   const { categories, categoriesLoaded } = useStore();
 
   if (!categoriesLoaded) {
-    return (
-      <section className="py-6 bg-white border-b border-gray-100 overflow-x-auto no-scrollbar">
-        <div className="container">
-          <div className="flex items-center justify-start lg:justify-center space-x-6 lg:space-x-12 min-w-max px-4">
-            {[1, 2, 3, 4, 5, 6].map((i) => (
-              <div key={i} className="flex flex-col items-center space-y-3 animate-pulse">
-                <div className="w-20 h-20 lg:w-24 lg:h-24 rounded-full bg-gray-100 border-2 border-gray-50" />
-                <div className="w-12 h-3 bg-gray-100 rounded" />
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-    );
+    return null;
   }
 
   if (categories.length === 0) return null;

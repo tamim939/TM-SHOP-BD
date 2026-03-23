@@ -135,11 +135,7 @@ const Admin: React.FC = () => {
   };
 
   if (authLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-red-600"></div>
-      </div>
-    );
+    return null;
   }
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, callback: (url: string) => void) => {
@@ -148,12 +144,64 @@ const Admin: React.FC = () => {
 
     setIsUploading(true);
     const reader = new FileReader();
-    reader.onloadend = () => {
-      const base64String = reader.result as string;
-      callback(base64String);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const MAX_WIDTH = 800;
+        const MAX_HEIGHT = 800;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > MAX_WIDTH) {
+            height *= MAX_WIDTH / width;
+            width = MAX_WIDTH;
+          }
+        } else {
+          if (height > MAX_HEIGHT) {
+            width *= MAX_HEIGHT / height;
+            height = MAX_HEIGHT;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx?.drawImage(img, 0, 0, width, height);
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.7); // Compress to 70% quality
+        callback(dataUrl);
+        setIsUploading(false);
+      };
+      img.onerror = () => {
+        setIsUploading(false);
+        alert("Error loading image.");
+      };
+      img.src = event.target?.result as string;
+    };
+    reader.onerror = () => {
       setIsUploading(false);
+      alert("Error reading file.");
     };
     reader.readAsDataURL(file);
+  };
+
+  const [localSettings, setLocalSettings] = useState(settings);
+
+  useEffect(() => {
+    setLocalSettings(settings);
+  }, [settings]);
+
+  const handleSaveSettings = async () => {
+    setIsSaving(true);
+    try {
+      await updateSettings(localSettings);
+      alert("Settings saved successfully!");
+    } catch (error) {
+      alert("Error saving settings.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleSaveProduct = async (e: React.FormEvent) => {
@@ -933,7 +981,7 @@ const Admin: React.FC = () => {
                             type="file"
                             accept="image/*"
                             className="hidden"
-                            onChange={e => handleImageUpload(e, (url) => setFormData({ ...formData, image: url }))}
+                            onChange={e => handleImageUpload(e, (url) => setFormData(prev => ({ ...prev, image: url })))}
                           />
                         </label>
                       </div>
@@ -973,9 +1021,11 @@ const Admin: React.FC = () => {
                                 accept="image/*"
                                 className="hidden"
                                 onChange={e => handleImageUpload(e, (url) => {
-                                  const newImages = [...formData.images];
-                                  newImages[index] = url;
-                                  setFormData({ ...formData, images: newImages });
+                                  setFormData(prev => {
+                                    const newImages = [...prev.images];
+                                    newImages[index] = url;
+                                    return { ...prev, images: newImages };
+                                  });
                                 })}
                               />
                             </label>
@@ -1185,7 +1235,7 @@ const Admin: React.FC = () => {
                             type="file"
                             accept="image/*"
                             className="hidden"
-                            onChange={e => handleImageUpload(e, (url) => setCategoryData({ ...categoryData, image: url }))}
+                            onChange={e => handleImageUpload(e, (url) => setCategoryData(prev => ({ ...prev, image: url })))}
                           />
                         </label>
                       </div>
@@ -1306,7 +1356,7 @@ const Admin: React.FC = () => {
                             type="file"
                             accept="image/*"
                             className="hidden"
-                            onChange={e => handleImageUpload(e, (url) => setSliderData({ ...sliderData, image: url }))}
+                            onChange={e => handleImageUpload(e, (url) => setSliderData(prev => ({ ...prev, image: url })))}
                           />
                         </label>
                       </div>
@@ -1326,7 +1376,7 @@ const Admin: React.FC = () => {
                             type="file"
                             accept="image/*"
                             className="hidden"
-                            onChange={e => handleImageUpload(e, (url) => setSliderData({ ...sliderData, mobileImage: url }))}
+                            onChange={e => handleImageUpload(e, (url) => setSliderData(prev => ({ ...prev, mobileImage: url })))}
                           />
                         </label>
                       </div>
@@ -1700,10 +1750,7 @@ const Admin: React.FC = () => {
             <div className="flex justify-between items-center">
               <h2 className="text-2xl font-bold">Settings</h2>
               <button
-                onClick={() => {
-                  const form = document.getElementById('settings-form') as HTMLFormElement;
-                  if (form) form.requestSubmit();
-                }}
+                onClick={handleSaveSettings}
                 disabled={isSaving || isUploading}
                 className="bg-red-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-red-700 transition-all shadow-lg shadow-red-200 disabled:opacity-50"
               >
@@ -1711,13 +1758,13 @@ const Admin: React.FC = () => {
               </button>
             </div>
             <div className="bg-white rounded-2xl border border-gray-100 p-8 max-w-2xl shadow-sm">
-              <form id="settings-form" onSubmit={(e) => { e.preventDefault(); alert('Settings saved!'); }} className="space-y-6">
+              <form id="settings-form" onSubmit={(e) => { e.preventDefault(); handleSaveSettings(); }} className="space-y-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Company Name</label>
                   <input
                     type="text"
-                    value={settings.companyName || ''}
-                    onChange={e => updateSettings({ ...settings, companyName: e.target.value })}
+                    value={localSettings.companyName || ''}
+                    onChange={e => setLocalSettings({ ...localSettings, companyName: e.target.value })}
                     placeholder="TSB SHOP BD"
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
                   />
@@ -1727,8 +1774,8 @@ const Admin: React.FC = () => {
                   <div className="flex space-x-2">
                     <input
                       type="text"
-                      value={settings.logo || ''}
-                      onChange={e => updateSettings({ ...settings, logo: e.target.value })}
+                      value={localSettings.logo || ''}
+                      onChange={e => setLocalSettings({ ...localSettings, logo: e.target.value })}
                       placeholder="https://example.com/logo.png"
                       className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
                     />
@@ -1738,7 +1785,7 @@ const Admin: React.FC = () => {
                         type="file"
                         accept="image/*"
                         className="hidden"
-                        onChange={e => handleImageUpload(e, (url) => updateSettings({ ...settings, logo: url }))}
+                        onChange={e => handleImageUpload(e, (url) => setLocalSettings(prev => ({ ...prev, logo: url })))}
                       />
                     </label>
                   </div>
@@ -1749,8 +1796,8 @@ const Admin: React.FC = () => {
                     <label className="block text-sm font-medium text-gray-700 mb-2">Shipping Charge (Inside Dhaka)</label>
                     <input
                       type="number"
-                      value={settings.shippingCharge || 60}
-                      onChange={e => updateSettings({ ...settings, shippingCharge: Number(e.target.value) })}
+                      value={localSettings.shippingCharge || 60}
+                      onChange={e => setLocalSettings({ ...localSettings, shippingCharge: Number(e.target.value) })}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
                     />
                   </div>
@@ -1758,8 +1805,8 @@ const Admin: React.FC = () => {
                     <label className="block text-sm font-medium text-gray-700 mb-2">Shipping Charge (Outside Dhaka)</label>
                     <input
                       type="number"
-                      value={settings.shippingChargeOutside || 120}
-                      onChange={e => updateSettings({ ...settings, shippingChargeOutside: Number(e.target.value) })}
+                      value={localSettings.shippingChargeOutside || 120}
+                      onChange={e => setLocalSettings({ ...localSettings, shippingChargeOutside: Number(e.target.value) })}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
                     />
                   </div>
@@ -1768,8 +1815,8 @@ const Admin: React.FC = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-2">WhatsApp Number</label>
                   <input
                     type="text"
-                    value={settings.whatsappNumber}
-                    onChange={e => updateSettings({ ...settings, whatsappNumber: e.target.value })}
+                    value={localSettings.whatsappNumber}
+                    onChange={e => setLocalSettings({ ...localSettings, whatsappNumber: e.target.value })}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
                   />
                 </div>
@@ -1781,8 +1828,8 @@ const Admin: React.FC = () => {
                       <label className="block text-sm font-medium text-gray-700 mb-2">Facebook Link</label>
                       <input
                         type="text"
-                        value={settings.facebookLink || ''}
-                        onChange={e => updateSettings({ ...settings, facebookLink: e.target.value })}
+                        value={localSettings.facebookLink || ''}
+                        onChange={e => setLocalSettings({ ...localSettings, facebookLink: e.target.value })}
                         placeholder="https://facebook.com/yourpage"
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
                       />
@@ -1791,8 +1838,8 @@ const Admin: React.FC = () => {
                       <label className="block text-sm font-medium text-gray-700 mb-2">Twitter Link</label>
                       <input
                         type="text"
-                        value={settings.twitterLink || ''}
-                        onChange={e => updateSettings({ ...settings, twitterLink: e.target.value })}
+                        value={localSettings.twitterLink || ''}
+                        onChange={e => setLocalSettings({ ...localSettings, twitterLink: e.target.value })}
                         placeholder="https://twitter.com/yourhandle"
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
                       />
@@ -1801,8 +1848,8 @@ const Admin: React.FC = () => {
                       <label className="block text-sm font-medium text-gray-700 mb-2">YouTube Link</label>
                       <input
                         type="text"
-                        value={settings.youtubeLink || ''}
-                        onChange={e => updateSettings({ ...settings, youtubeLink: e.target.value })}
+                        value={localSettings.youtubeLink || ''}
+                        onChange={e => setLocalSettings({ ...localSettings, youtubeLink: e.target.value })}
                         placeholder="https://youtube.com/yourchannel"
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
                       />
@@ -1811,8 +1858,8 @@ const Admin: React.FC = () => {
                       <label className="block text-sm font-medium text-gray-700 mb-2">Instagram Link</label>
                       <input
                         type="text"
-                        value={settings.instagramLink || ''}
-                        onChange={e => updateSettings({ ...settings, instagramLink: e.target.value })}
+                        value={localSettings.instagramLink || ''}
+                        onChange={e => setLocalSettings({ ...localSettings, instagramLink: e.target.value })}
                         placeholder="https://instagram.com/yourprofile"
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
                       />
@@ -1821,8 +1868,8 @@ const Admin: React.FC = () => {
                       <label className="block text-sm font-medium text-gray-700 mb-2">LinkedIn Link</label>
                       <input
                         type="text"
-                        value={settings.linkedinLink || ''}
-                        onChange={e => updateSettings({ ...settings, linkedinLink: e.target.value })}
+                        value={localSettings.linkedinLink || ''}
+                        onChange={e => setLocalSettings({ ...localSettings, linkedinLink: e.target.value })}
                         placeholder="https://linkedin.com/in/yourprofile"
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
                       />
@@ -1834,8 +1881,8 @@ const Admin: React.FC = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-2">Slider Subtitle</label>
                   <input
                     type="text"
-                    value={settings.sliderTitle || ''}
-                    onChange={e => updateSettings({ ...settings, sliderTitle: e.target.value })}
+                    value={localSettings.sliderTitle || ''}
+                    onChange={e => setLocalSettings({ ...localSettings, sliderTitle: e.target.value })}
                     placeholder="e.g., Our New Collection"
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
                   />
@@ -1851,18 +1898,18 @@ const Admin: React.FC = () => {
                       </div>
                       <button
                         type="button"
-                        onClick={() => updateSettings({ ...settings, showNotice: !settings.showNotice })}
-                        className={`w-14 h-8 rounded-full transition-all relative ${settings.showNotice ? 'bg-red-600' : 'bg-gray-300'}`}
+                        onClick={() => setLocalSettings({ ...localSettings, showNotice: !localSettings.showNotice })}
+                        className={`w-14 h-8 rounded-full transition-all relative ${localSettings.showNotice ? 'bg-red-600' : 'bg-gray-300'}`}
                       >
-                        <div className={`absolute top-1 w-6 h-6 bg-white rounded-full transition-all ${settings.showNotice ? 'left-7' : 'left-1'}`} />
+                        <div className={`absolute top-1 w-6 h-6 bg-white rounded-full transition-all ${localSettings.showNotice ? 'left-7' : 'left-1'}`} />
                       </button>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Notice Text</label>
                       <textarea
                         rows={2}
-                        value={settings.noticeText || ''}
-                        onChange={e => updateSettings({ ...settings, noticeText: e.target.value })}
+                        value={localSettings.noticeText || ''}
+                        onChange={e => setLocalSettings({ ...localSettings, noticeText: e.target.value })}
                         placeholder="e.g., Welcome to TM SHOP BD! Enjoy your shopping."
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
                       />
@@ -1878,8 +1925,8 @@ const Admin: React.FC = () => {
                       <div className="flex space-x-2">
                         <input
                           type="text"
-                          value={settings.paymentGatewayImage || ''}
-                          onChange={e => updateSettings({ ...settings, paymentGatewayImage: e.target.value })}
+                          value={localSettings.paymentGatewayImage || ''}
+                          onChange={e => setLocalSettings({ ...localSettings, paymentGatewayImage: e.target.value })}
                           placeholder="https://example.com/payment-gateways.png"
                           className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
                         />
@@ -1889,7 +1936,7 @@ const Admin: React.FC = () => {
                             type="file"
                             accept="image/*"
                             className="hidden"
-                            onChange={e => handleImageUpload(e, (url) => updateSettings({ ...settings, paymentGatewayImage: url }))}
+                            onChange={e => handleImageUpload(e, (url) => setLocalSettings(prev => ({ ...prev, paymentGatewayImage: url })))}
                           />
                         </label>
                       </div>
@@ -1901,8 +1948,8 @@ const Admin: React.FC = () => {
                       <label className="block text-sm font-medium text-gray-700 mb-2">bKash Number</label>
                       <input
                         type="text"
-                        value={settings.bkashNumber || ''}
-                        onChange={e => updateSettings({ ...settings, bkashNumber: e.target.value })}
+                        value={localSettings.bkashNumber || ''}
+                        onChange={e => setLocalSettings({ ...localSettings, bkashNumber: e.target.value })}
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
                       />
                     </div>
@@ -1910,8 +1957,8 @@ const Admin: React.FC = () => {
                       <label className="block text-sm font-medium text-gray-700 mb-2">Nagad Number</label>
                       <input
                         type="text"
-                        value={settings.nagadNumber || ''}
-                        onChange={e => updateSettings({ ...settings, nagadNumber: e.target.value })}
+                        value={localSettings.nagadNumber || ''}
+                        onChange={e => setLocalSettings({ ...localSettings, nagadNumber: e.target.value })}
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
                       />
                     </div>
@@ -1919,8 +1966,8 @@ const Admin: React.FC = () => {
                       <label className="block text-sm font-medium text-gray-700 mb-2">Rocket Number</label>
                       <input
                         type="text"
-                        value={settings.rocketNumber || ''}
-                        onChange={e => updateSettings({ ...settings, rocketNumber: e.target.value })}
+                        value={localSettings.rocketNumber || ''}
+                        onChange={e => setLocalSettings({ ...localSettings, rocketNumber: e.target.value })}
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
                       />
                     </div>

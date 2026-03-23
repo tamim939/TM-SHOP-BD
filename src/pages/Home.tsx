@@ -27,25 +27,6 @@ export default function Home() {
       
       <CategorySection />
 
-      {/* Skeletons for sections if not loaded */}
-      {(!productsLoaded || !categoriesLoaded) && (
-        <div className="space-y-12 py-12">
-          {[1, 2].map(i => (
-            <div key={i} className="container">
-              <div className="mb-8 flex items-center justify-between animate-pulse">
-                <div className="w-48 h-8 bg-gray-100 rounded" />
-                <div className="w-20 h-6 bg-gray-100 rounded" />
-              </div>
-              <div className="flex space-x-4 overflow-hidden">
-                {[1, 2, 3, 4, 5].map(j => (
-                  <div key={j} className="min-w-[150px] aspect-[3/4] bg-gray-100 rounded-2xl animate-pulse" />
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
       {/* Categorized Product Sections */}
       {sortedCategories.map(category => {
         const categoryProducts = products.filter(p => 

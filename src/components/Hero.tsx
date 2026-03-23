@@ -10,11 +10,7 @@ export default function Hero() {
   const { sliders, slidersLoaded } = useStore();
 
   if (!slidersLoaded) {
-    return (
-      <section className="relative w-full px-4 lg:px-6 py-4">
-        <div className="max-w-[1400px] mx-auto w-full bg-gray-100 animate-pulse aspect-[16/9] md:aspect-[21/9] rounded-3xl" />
-      </section>
-    );
+    return null;
   }
 
   if (sliders.length === 0) {
