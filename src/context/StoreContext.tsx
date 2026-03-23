@@ -106,27 +106,37 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [chatSessions, setChatSessions] = useState<ChatSession[]>([]);
   const [activeChatUserId, _setActiveChatUserId] = useState<string | null>(null);
-  const [settings, setSettings] = useState<Settings>({
-    paymentGatewayImage: 'https://i.ibb.co.com/1Y2vX4sd/new-payment-gateway.png',
-    whatsappNumber: '01909338635',
-    whatsappMessage: 'Hello',
-    messengerLink: 'https://m.me/yourpage',
-    sliderTitle: 'Our New Collection',
-    logo: '',
-    companyName: 'TM SHOP BD',
-    shippingCharge: 60,
-    shippingChargeOutside: 120,
-    bkashNumber: '01918987804',
-    nagadNumber: '01918987804',
-    rocketNumber: '01918987804',
-    advancePaymentPercentage: 70,
-    showNotice: true,
-    noticeText: 'Welcome to TM SHOP BD! Enjoy your shopping.',
-    facebookLink: 'https://facebook.com',
-    twitterLink: 'https://twitter.com',
-    youtubeLink: 'https://youtube.com',
-    instagramLink: 'https://instagram.com',
-    linkedinLink: 'https://linkedin.com'
+  const [settings, setSettings] = useState<Settings>(() => {
+    const saved = localStorage.getItem('tm_shop_settings');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error('Error parsing saved settings:', e);
+      }
+    }
+    return {
+      paymentGatewayImage: 'https://i.ibb.co.com/1Y2vX4sd/new-payment-gateway.png',
+      whatsappNumber: '01909338635',
+      whatsappMessage: 'Hello',
+      messengerLink: 'https://m.me/yourpage',
+      sliderTitle: 'Our New Collection',
+      logo: '',
+      companyName: 'TM SHOP BD',
+      shippingCharge: 60,
+      shippingChargeOutside: 120,
+      bkashNumber: '01918987804',
+      nagadNumber: '01918987804',
+      rocketNumber: '01918987804',
+      advancePaymentPercentage: 70,
+      showNotice: false,
+      noticeText: '',
+      facebookLink: 'https://facebook.com',
+      twitterLink: 'https://twitter.com',
+      youtubeLink: 'https://youtube.com',
+      instagramLink: 'https://instagram.com',
+      linkedinLink: 'https://linkedin.com'
+    };
   });
   const [user, setUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
@@ -271,7 +281,11 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           // Also update it in the database to permanently remove it
           update(ref(db, 'settings'), { logo: '' });
         }
-        setSettings(prev => ({ ...prev, ...data }));
+        setSettings(prev => {
+          const newSettings = { ...prev, ...data };
+          localStorage.setItem('tm_shop_settings', JSON.stringify(newSettings));
+          return newSettings;
+        });
         setSettingsLoaded(true);
       } else {
         setSettingsLoaded(true);
@@ -602,6 +616,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     try {
       const settingsRef = ref(db, 'settings');
       await set(settingsRef, newSettings);
+      localStorage.setItem('tm_shop_settings', JSON.stringify(newSettings));
     } catch (error) {
       console.error("Error updating settings:", error);
       throw error;

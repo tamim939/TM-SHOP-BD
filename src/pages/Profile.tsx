@@ -165,8 +165,8 @@ export default function Profile() {
           </div>
           
           <div className="mb-8">
-            <h1 className="text-2xl md:text-3xl font-black text-gray-900 mb-2">Welcome back, {userName}!</h1>
-            <p className="text-gray-500 font-medium">Manage your orders and account settings</p>
+            <h1 className="text-3xl md:text-4xl font-black text-gray-900 mb-1">{userName}</h1>
+            <p className="text-red-600 font-bold uppercase tracking-widest text-sm">{isAdmin ? 'Administrator' : 'Customer'}</p>
           </div>
 
           <div className="flex flex-wrap justify-center gap-4">

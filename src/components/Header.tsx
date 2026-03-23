@@ -49,7 +49,7 @@ export default function Header() {
       )}
     >
       {/* Notice Bar */}
-      {settings.showNotice && settings.noticeText && (
+      {settings.showNotice && settings.noticeText && settings.noticeText.trim() !== '' && (
         <div className="bg-red-600 text-white py-1.5 px-4 relative overflow-hidden">
           <div className="container mx-auto flex items-center justify-center space-x-3">
             <Phone size={12} className="shrink-0" />
@@ -84,16 +84,16 @@ export default function Header() {
           </button>
 
           {/* Logo */}
-          <Link to="/" className="flex items-center">
+          <Link to="/" className="flex items-center group">
             {isValidLogo(settings.logo) ? (
               <img 
                 src={settings.logo} 
                 alt={settings.companyName || "TM SHOP BD"} 
-                className="h-8 lg:h-10 w-auto"
+                className="h-8 md:h-10 lg:h-12 w-auto object-contain transition-transform group-hover:scale-105"
                 referrerPolicy="no-referrer"
               />
             ) : (
-              <span className="text-red-600 font-black text-xl tracking-tighter">
+              <span className="text-red-600 font-black text-xl md:text-2xl tracking-tighter group-hover:text-red-700 transition-colors">
                 {settings.companyName || "TM SHOP BD"}
               </span>
             )}
