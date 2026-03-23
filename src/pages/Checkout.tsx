@@ -22,7 +22,7 @@ export default function Checkout() {
     name: '',
     phone: '',
     address: '',
-    paymentMethod: 'cod' as 'cod' | 'bkash' | 'nagad' | 'rocket',
+    paymentMethod: 'bkash' as 'bkash' | 'nagad' | 'rocket',
     shippingLocation: 'inside' as 'inside' | 'outside',
     paymentPhone: '',
     transactionId: '',
@@ -133,7 +133,7 @@ export default function Checkout() {
       transactionId: formData.transactionId,
       advanceAmount: advanceAmount,
       dueAmount: dueAmount,
-      paymentStatus: formData.paymentMethod === 'cod' ? 'pending' : 'awaiting-verification',
+      paymentStatus: 'awaiting-verification',
       status: 'pending' as const,
       note: formData.note,
       createdAt: new Date().toISOString()
@@ -157,11 +157,9 @@ export default function Checkout() {
       }
     }
     if (step === 3) {
-      if (formData.paymentMethod !== 'cod') {
-        if (!formData.paymentPhone || !formData.transactionId) {
-          alert('Please fill in payment details');
-          return;
-        }
+      if (!formData.paymentPhone || !formData.transactionId) {
+        alert('Please fill in payment details');
+        return;
       }
     }
     setStep(prev => prev + 1);
@@ -285,10 +283,9 @@ export default function Checkout() {
                   <h2 className="text-2xl font-bold mb-8">Payment Method</h2>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {[
-                      { id: 'cod', name: 'Cash on Delivery', icon: <Truck className="w-6 h-6" />, desc: 'Pay when you receive' },
-                      { id: 'bkash', name: 'bKash', icon: <img src="https://i.ibb.co.com/v6m80Yd/bkash.png" className="w-8 h-8 object-contain" />, desc: 'Pay via bKash' },
-                      { id: 'nagad', name: 'Nagad', icon: <img src="https://i.ibb.co.com/2YyVv6X/nagad.png" className="w-8 h-8 object-contain" />, desc: 'Pay via Nagad' },
-                      { id: 'rocket', name: 'Rocket', icon: <img src="https://i.ibb.co.com/v6m80Yd/bkash.png" className="w-8 h-8 object-contain" />, desc: 'Pay via Rocket' }
+                      { id: 'bkash', name: 'bKash', icon: <img src="https://i.ibb.co.com/v6m80Yd/bkash.png" className="w-10 h-10 object-contain" />, desc: 'Pay via bKash' },
+                      { id: 'nagad', name: 'Nagad', icon: <img src="https://i.ibb.co.com/2YyVv6X/nagad.png" className="w-10 h-10 object-contain" />, desc: 'Pay via Nagad' },
+                      { id: 'rocket', name: 'Rocket', icon: <img src="https://i.ibb.co.com/pBfMv8Y/rocket.png" className="w-10 h-10 object-contain" />, desc: 'Pay via Rocket' }
                     ].map(method => (
                       <button
                         key={method.id}
@@ -299,7 +296,7 @@ export default function Checkout() {
                             : 'border-gray-100 hover:border-gray-200 bg-gray-50/50'
                         }`}
                       >
-                        <div className={`p-2 rounded-xl ${formData.paymentMethod === method.id ? 'bg-red-600 text-white' : 'bg-white text-gray-400'}`}>
+                        <div className={`p-2 rounded-xl bg-white shadow-sm`}>
                           {method.icon}
                         </div>
                         <div>
@@ -312,7 +309,7 @@ export default function Checkout() {
                   <div className="flex justify-between pt-8">
                     <button onClick={prevStep} className="px-10 py-4 rounded-2xl font-bold text-gray-500 hover:bg-gray-100 transition-all">Back</button>
                     <button onClick={nextStep} className="bg-red-600 text-white px-10 py-4 rounded-2xl font-bold hover:bg-red-700 transition-all shadow-lg shadow-red-200">
-                      {formData.paymentMethod === 'cod' ? 'Review Order' : 'Next'}
+                      Next
                     </button>
                   </div>
                 </motion.div>
@@ -320,32 +317,19 @@ export default function Checkout() {
 
               {step === 3 && (
                 <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
-                  {formData.paymentMethod === 'cod' ? (
-                    <div className="text-center py-12">
-                      <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6">
-                        <Truck className="w-10 h-10 text-red-600" />
+                  <div className="space-y-8">
+                    <div className="flex items-center space-x-4 p-4 bg-red-50 rounded-2xl border border-red-100">
+                      <div className="p-3 bg-white rounded-xl shadow-sm">
+                        <img 
+                          src={formData.paymentMethod === 'bkash' ? "https://i.ibb.co.com/v6m80Yd/bkash.png" : formData.paymentMethod === 'nagad' ? "https://i.ibb.co.com/2YyVv6X/nagad.png" : "https://i.ibb.co.com/pBfMv8Y/rocket.png"} 
+                          className="w-10 h-10 object-contain" 
+                        />
                       </div>
-                      <h3 className="text-2xl font-bold mb-2">Cash on Delivery</h3>
-                      <p className="text-gray-500">You will pay the full amount when you receive the product.</p>
-                      <div className="flex justify-between pt-12">
-                        <button onClick={prevStep} className="px-10 py-4 rounded-2xl font-bold text-gray-500 hover:bg-gray-100 transition-all">Back</button>
-                        <button onClick={nextStep} className="bg-red-600 text-white px-10 py-4 rounded-2xl font-bold hover:bg-red-700 transition-all shadow-lg shadow-red-200">Review Order</button>
+                      <div>
+                        <h3 className="font-bold text-red-600 capitalize">Pay with {formData.paymentMethod}</h3>
+                        <p className="text-xs text-red-400">Please complete the advance payment to proceed.</p>
                       </div>
                     </div>
-                  ) : (
-                    <div className="space-y-8">
-                      <div className="flex items-center space-x-4 p-4 bg-red-50 rounded-2xl border border-red-100">
-                        <div className="p-3 bg-white rounded-xl shadow-sm">
-                          <img 
-                            src={formData.paymentMethod === 'bkash' ? "https://i.ibb.co.com/v6m80Yd/bkash.png" : "https://i.ibb.co.com/2YyVv6X/nagad.png"} 
-                            className="w-10 h-10 object-contain" 
-                          />
-                        </div>
-                        <div>
-                          <h3 className="font-bold text-red-600 capitalize">Pay with {formData.paymentMethod}</h3>
-                          <p className="text-xs text-red-400">Please complete the advance payment to proceed.</p>
-                        </div>
-                      </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="bg-gray-50 p-6 rounded-2xl border border-gray-100">
@@ -410,11 +394,10 @@ export default function Checkout() {
                         <button onClick={nextStep} className="bg-red-600 text-white px-10 py-4 rounded-2xl font-bold hover:bg-red-700 transition-all shadow-lg shadow-red-200">Review Order</button>
                       </div>
                     </div>
-                  )}
-                </motion.div>
-              )}
+                  </motion.div>
+                )}
 
-              {step === 4 && (
+                {step === 4 && (
                 <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
                   <h2 className="text-2xl font-bold mb-8">Review & Place Order</h2>
                   
@@ -430,16 +413,12 @@ export default function Checkout() {
                       <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Payment Method</h3>
                       <div className="flex items-center space-x-3">
                         <p className="font-bold text-lg capitalize">{formData.paymentMethod}</p>
-                        {formData.paymentMethod !== 'cod' && (
-                          <span className="px-3 py-1 bg-red-100 text-red-600 text-[10px] font-bold rounded-full uppercase">Awaiting Verification</span>
-                        )}
+                        <span className="px-3 py-1 bg-red-100 text-red-600 text-[10px] font-bold rounded-full uppercase">Awaiting Verification</span>
                       </div>
-                      {formData.paymentMethod !== 'cod' && (
-                        <div className="mt-2 text-sm text-gray-500">
-                          <p>Sender: {formData.paymentPhone}</p>
-                          <p>TxID: {formData.transactionId}</p>
-                        </div>
-                      )}
+                      <div className="mt-2 text-sm text-gray-500">
+                        <p>Sender: {formData.paymentPhone}</p>
+                        <p>TxID: {formData.transactionId}</p>
+                      </div>
                     </div>
 
                     <div className="space-y-4">
@@ -507,18 +486,14 @@ export default function Checkout() {
                     </div>
                   )}
 
-                  {formData.paymentMethod !== 'cod' && (
-                    <>
-                      <div className="flex justify-between text-sm text-red-600 pt-4 border-t border-dashed">
-                        <span className="font-medium">Advance Payment ({advancePercentage}%)</span>
-                        <span className="font-bold">Tk {advanceAmount}</span>
-                      </div>
-                      <div className="flex justify-between text-sm text-gray-500">
-                        <span className="font-medium">Due Payment</span>
-                        <span className="font-bold">Tk {dueAmount}</span>
-                      </div>
-                    </>
-                  )}
+                  <div className="flex justify-between text-sm text-red-600 pt-4 border-t border-dashed">
+                    <span className="font-medium">Advance Payment ({advancePercentage}%)</span>
+                    <span className="font-bold">Tk {advanceAmount}</span>
+                  </div>
+                  <div className="flex justify-between text-sm text-gray-500">
+                    <span className="font-medium">Due Payment</span>
+                    <span className="font-bold">Tk {dueAmount}</span>
+                  </div>
 
                   <div className="bg-red-50 p-6 rounded-3xl mt-8 flex justify-between items-center">
                     <span className="text-lg font-bold text-red-900">Total</span>

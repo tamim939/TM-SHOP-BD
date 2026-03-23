@@ -1917,6 +1917,21 @@ const Admin: React.FC = () => {
                     </div>
 
                     <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100 space-y-4">
+                      <h4 className="font-bold text-gray-800">Search Settings</h4>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Search Overlay Categories (Comma separated)</label>
+                        <input
+                          type="text"
+                          value={localSettings.searchCategories || ''}
+                          onChange={e => setLocalSettings({ ...localSettings, searchCategories: e.target.value })}
+                          placeholder="e.g. Badminton, Cricket, Football"
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
+                        />
+                        <p className="mt-1 text-xs text-gray-500">These categories will appear in the search overlay for quick filtering.</p>
+                      </div>
+                    </div>
+
+                    <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100 space-y-4">
                       <h4 className="font-bold text-gray-800">WhatsApp Support</h4>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>

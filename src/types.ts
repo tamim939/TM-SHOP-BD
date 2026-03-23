@@ -146,4 +146,5 @@ export interface Settings {
   supportWhatsappDescription?: string;
   supportWhatsappNumber?: string;
   supportWhatsappResponseTime?: string;
+  searchCategories?: string;
 }

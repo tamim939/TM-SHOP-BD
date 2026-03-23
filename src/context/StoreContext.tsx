@@ -171,7 +171,8 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       supportWhatsappTitle: 'WhatsApp',
       supportWhatsappDescription: 'Chat with us on WhatsApp for quick responses and support.',
       supportWhatsappNumber: '+880 1993 644346',
-      supportWhatsappResponseTime: 'Typically responds within minutes'
+      supportWhatsappResponseTime: 'Typically responds within minutes',
+      searchCategories: 'Badminton, Cricket, Football, Tennis, Basketball'
     };
   });
   const [user, setUser] = useState<User | null>(null);

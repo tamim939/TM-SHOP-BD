@@ -49,19 +49,6 @@ function Layout() {
       {!isAdminPage && <Footer />}
       {!isAdminPage && <BottomNav />}
       
-      {/* Floating Support Button */}
-      {!isAdminPage && (
-        <Link 
-          to="/support"
-          className="fixed bottom-20 right-4 lg:bottom-8 lg:right-8 z-40 w-14 h-14 bg-green-500 text-white rounded-full shadow-2xl flex items-center justify-center hover:bg-green-600 transition-all active:scale-95 group"
-        >
-          <div className="absolute -top-10 right-0 bg-white text-gray-900 text-[10px] font-bold px-3 py-1 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap border border-gray-100">
-            Need Help?
-          </div>
-          <MessageCircle size={28} />
-          <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-600 rounded-full border-2 border-white animate-pulse" />
-        </Link>
-      )}
     </div>
   );
 }

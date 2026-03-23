@@ -148,8 +148,13 @@ export default function Header() {
 
         {/* Actions */}
         <div className="flex items-center space-x-1">
-          <Link to="/support" className="p-2 text-gray-400 hover:text-red-600 transition-colors rounded-full hover:bg-gray-100">
-            <HelpCircle size={24} />
+          <Link 
+            to="/support" 
+            className="p-2 text-gray-400 hover:text-red-600 transition-all rounded-full hover:bg-red-50 group relative"
+            title="Support Center"
+          >
+            <HelpCircle size={24} className="group-hover:scale-110 transition-transform" />
+            <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-600 rounded-full border border-white animate-pulse" />
           </Link>
           
           <div className="hidden md:flex items-center space-x-1">
@@ -241,6 +246,37 @@ export default function Header() {
                 </div>
               ) : (
                 <div className="space-y-8">
+                  {settings.searchCategories && (
+                    <div>
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest">Browse Categories</h3>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {settings.searchCategories.split(',').map(cat => {
+                          const categoryName = cat.trim();
+                          const category = useStore().categories.find(c => c.name.toLowerCase() === categoryName.toLowerCase());
+                          return (
+                            <button
+                              key={categoryName}
+                              onClick={() => {
+                                if (category) {
+                                  navigate(`/category/${category.slug}`);
+                                } else {
+                                  handleSearch(categoryName);
+                                }
+                                setIsSearchOverlayOpen(false);
+                              }}
+                              className="px-4 py-2 bg-gray-50 border border-gray-100 rounded-full text-xs font-bold text-gray-600 hover:bg-red-50 hover:text-red-600 hover:border-red-100 transition-all flex items-center space-x-2"
+                            >
+                              <LayoutGrid size={14} />
+                              <span>{categoryName}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
                   <div>
                     <div className="flex items-center justify-between mb-4">
                       <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest">Popular Searches</h3>
