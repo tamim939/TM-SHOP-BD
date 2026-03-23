@@ -301,9 +301,8 @@ const Admin: React.FC = () => {
       }
 
       const finalCategoryData = {
-        ...categoryData,
+        name: categoryData.name,
         image: categoryData.image || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=1000&auto=format&fit=crop',
-        categoryCouponDiscount: categoryData.categoryCouponDiscount ? Number(categoryData.categoryCouponDiscount) : undefined,
         createdAt: isEditingCategory?.createdAt || new Date().toISOString()
       };
 
@@ -311,7 +310,6 @@ const Admin: React.FC = () => {
         await updateCategory({ 
           ...finalCategoryData, 
           id: isEditingCategory.id,
-          slug: isEditingCategory.slug || ''
         } as any);
       } else {
         await addCategory(finalCategoryData as any);
@@ -1277,28 +1275,6 @@ const Admin: React.FC = () => {
                         </label>
                       </div>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Category Coupon Code</label>
-                        <input
-                          type="text"
-                          value={categoryData.categoryCouponCode}
-                          onChange={e => setCategoryData({ ...categoryData, categoryCouponCode: e.target.value })}
-                          placeholder="e.g. PROTHOM"
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Category Coupon Discount (%)</label>
-                        <input
-                          type="number"
-                          value={categoryData.categoryCouponDiscount}
-                          onChange={e => setCategoryData({ ...categoryData, categoryCouponDiscount: e.target.value })}
-                          placeholder="e.g. 10"
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
-                        />
-                      </div>
-                    </div>
                     {/* Hidden submit button to allow triggering from outside */}
                     <button type="submit" id="category-form-submit-btn" className="hidden" />
 
@@ -1340,8 +1316,6 @@ const Admin: React.FC = () => {
                         setCategoryData({ 
                           name: category.name, 
                           image: category.image,
-                          categoryCouponCode: category.categoryCouponCode || '',
-                          categoryCouponDiscount: category.categoryCouponDiscount?.toString() || ''
                         }); 
                       }}
                       className="p-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"

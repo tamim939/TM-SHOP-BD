@@ -269,7 +269,6 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           ...data[key],
           id: key
         }))
-        .filter(cat => ['Panjabi', 'Pajama'].includes(cat.name))
         .sort((a, b) => a.name.localeCompare(b.name));
         
         setCategories(categoryList);
@@ -877,7 +876,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const isInWishlist = (productId: string) => wishlist.includes(productId);
 
-  const isAppReady = settingsLoaded && productsLoaded && categoriesLoaded && !authLoading;
+  const isAppReady = settingsLoaded && productsLoaded && categoriesLoaded;
 
   return (
     <StoreContext.Provider value={{ 

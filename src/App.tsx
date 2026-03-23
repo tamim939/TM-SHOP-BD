@@ -29,10 +29,7 @@ function Layout() {
 
   useEffect(() => {
     if (isAppReady) {
-      const timer = setTimeout(() => {
-        setShowLoading(false);
-      }, 500); // Shorter delay if ready
-      return () => clearTimeout(timer);
+      setShowLoading(false);
     }
   }, [isAppReady]);
 
