@@ -148,25 +148,38 @@ export default function Profile() {
     <div className="min-h-screen bg-gray-50 pt-8 pb-20 lg:pb-12">
       <div className="container max-w-5xl px-4">
         {/* Welcome Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
-          <div className="flex items-center space-x-4">
-            <div className="text-4xl">👋</div>
-            <div>
-              <h1 className="text-2xl md:text-3xl font-black text-gray-900">Welcome back, {userName}!</h1>
-              <p className="text-gray-500 font-medium">Manage your orders and account settings</p>
+        <div className="flex flex-col items-center text-center mb-12">
+          <div className="relative mb-6 group">
+            <div className="w-28 h-28 lg:w-32 lg:h-32 rounded-full overflow-hidden border-4 border-white shadow-xl ring-1 ring-gray-100">
+              <img 
+                src={user?.photoURL || 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y'} 
+                alt={userName}
+                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                referrerPolicy="no-referrer"
+              />
             </div>
+            <label className="absolute bottom-1 right-1 p-2.5 bg-red-600 text-white rounded-full cursor-pointer shadow-lg hover:bg-red-700 transition-all active:scale-90">
+              <Camera size={18} />
+              <input type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} />
+            </label>
           </div>
-          <div className="flex space-x-3">
+          
+          <div className="mb-8">
+            <h1 className="text-2xl md:text-3xl font-black text-gray-900 mb-2">Welcome back, {userName}!</h1>
+            <p className="text-gray-500 font-medium">Manage your orders and account settings</p>
+          </div>
+
+          <div className="flex flex-wrap justify-center gap-4">
             <button 
               onClick={() => setIsEditingName(true)}
-              className="flex items-center space-x-2 bg-red-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-red-700 transition-all shadow-lg active:scale-95"
+              className="flex items-center space-x-2 bg-red-600 text-white px-8 py-3 rounded-2xl font-bold hover:bg-red-700 transition-all shadow-lg shadow-red-200 active:scale-95"
             >
               <Edit2 size={18} />
               <span>Edit Profile</span>
             </button>
             <button 
               onClick={handleLogout}
-              className="flex items-center space-x-2 bg-white text-gray-600 border px-6 py-3 rounded-xl font-bold hover:bg-gray-50 transition-all shadow-sm active:scale-95"
+              className="flex items-center space-x-2 bg-white text-gray-600 border border-gray-200 px-8 py-3 rounded-2xl font-bold hover:bg-gray-50 transition-all shadow-sm active:scale-95"
             >
               <LogOut size={18} />
               <span>Logout</span>

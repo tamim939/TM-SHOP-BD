@@ -18,7 +18,7 @@ export default function CategorySection() {
           <h2 className="text-xl font-black text-gray-900 uppercase tracking-tight">All Categories</h2>
           <div className="w-12 h-1 bg-red-600 mt-2"></div>
         </div>
-        <div className="flex items-center justify-start lg:justify-center space-x-6 lg:space-x-12 min-w-max px-4">
+        <div className="flex items-center justify-start lg:justify-center space-x-4 lg:space-x-8 min-w-max px-4">
           {categories.map((category, index) => (
             <motion.div
               key={category.id}

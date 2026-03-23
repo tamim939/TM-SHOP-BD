@@ -66,7 +66,9 @@ const Admin: React.FC = () => {
     addAdminReply,
     addCoupon,
     updateCoupon,
-    deleteCoupon
+    deleteCoupon,
+    user,
+    updateUserProfile
   } = useStore();
 
   const navigate = useNavigate();
@@ -532,8 +534,60 @@ const Admin: React.FC = () => {
         fixed lg:static inset-y-0 left-0 w-64 bg-white border-r border-gray-200 flex flex-col z-[70] transition-transform duration-300
         ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
-        <div className="p-6 border-b border-gray-100 hidden lg:block">
-          <h1 className="text-xl font-bold text-red-600">Admin Panel</h1>
+        <div className="p-6 border-b border-gray-100">
+          <div className="flex flex-col items-center text-center">
+            <div className="relative mb-3 group">
+              <img 
+                src={user?.photoURL || 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y'} 
+                className="w-20 h-20 rounded-full object-cover border-2 border-red-100 group-hover:border-red-500 transition-all"
+                referrerPolicy="no-referrer"
+              />
+              <label className="absolute bottom-0 right-0 p-1.5 bg-red-600 text-white rounded-full cursor-pointer hover:bg-red-700 transition-all shadow-sm">
+                <Camera size={12} />
+                <input 
+                  type="file" 
+                  accept="image/*" 
+                  className="hidden" 
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    setIsUploading(true);
+                    try {
+                      const reader = new FileReader();
+                      reader.onloadend = async () => {
+                        const base64String = reader.result as string;
+                        await updateUserProfile({ photoURL: base64String });
+                        setIsUploading(false);
+                      };
+                      reader.readAsDataURL(file);
+                    } catch (error) {
+                      console.error("Error updating profile photo:", error);
+                      setIsUploading(false);
+                    }
+                  }} 
+                />
+              </label>
+            </div>
+            <h2 className="font-bold text-gray-800 line-clamp-1">{user?.displayName || 'Admin'}</h2>
+            <p className="text-[10px] text-gray-400 uppercase tracking-widest font-bold mt-1">Administrator</p>
+            
+            <div className="grid grid-cols-2 gap-2 mt-4 w-full">
+              <button 
+                onClick={() => navigate('/profile')}
+                className="flex items-center justify-center space-x-1 px-2 py-2 bg-gray-50 text-gray-600 rounded-lg text-[10px] font-bold hover:bg-gray-100 transition-all"
+              >
+                <Edit2 size={10} />
+                <span>Edit Profile</span>
+              </button>
+              <button 
+                onClick={handleLogout}
+                className="flex items-center justify-center space-x-1 px-2 py-2 bg-red-50 text-red-600 rounded-lg text-[10px] font-bold hover:bg-red-100 transition-all"
+              >
+                <LogOut size={10} />
+                <span>Logout</span>
+              </button>
+            </div>
+          </div>
         </div>
         <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
           <button
@@ -571,7 +625,7 @@ const Admin: React.FC = () => {
             </button>
           ))}
         </nav>
-        <div className="p-4 border-t border-gray-100">
+        <div className="p-4 border-t border-gray-100 lg:hidden">
           <button 
             onClick={handleLogout}
             className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-red-500 hover:bg-red-50 transition-all"
