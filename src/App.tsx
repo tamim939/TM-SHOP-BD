@@ -17,11 +17,25 @@ import ScrollToTop from './components/ScrollToTop';
 import BottomNav from './components/BottomNav';
 import { StoreProvider, useStore } from './context/StoreContext';
 
+import { useState, useEffect } from 'react';
+
 function Layout() {
-  const { settings } = useStore();
+  const { settings, isAppReady } = useStore();
+  const [showLoading, setShowLoading] = useState(true);
   const location = window.location.pathname;
   const isAdminPage = location === '/admin';
   const hasNotice = settings.showNotice && settings.noticeText && settings.noticeText.trim() !== '';
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowLoading(false);
+    }, 1000); // 1 second loading as requested
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (showLoading || !isAppReady) {
+    return <LoadingScreen />;
+  }
 
   return (
     <div className="min-h-screen flex flex-col">

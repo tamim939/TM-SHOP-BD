@@ -96,9 +96,18 @@ const generateSlug = (text: string) => {
 };
 
 export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [sliders, setSliders] = useState<Slider[]>([]);
+  const [products, setProducts] = useState<Product[]>(() => {
+    const saved = localStorage.getItem('tm_shop_products');
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [categories, setCategories] = useState<Category[]>(() => {
+    const saved = localStorage.getItem('tm_shop_categories');
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [sliders, setSliders] = useState<Slider[]>(() => {
+    const saved = localStorage.getItem('tm_shop_sliders');
+    return saved ? JSON.parse(saved) : [];
+  });
   const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -140,10 +149,10 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   });
   const [user, setUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
-  const [settingsLoaded, setSettingsLoaded] = useState(false);
-  const [productsLoaded, setProductsLoaded] = useState(false);
-  const [categoriesLoaded, setCategoriesLoaded] = useState(false);
-  const [slidersLoaded, setSlidersLoaded] = useState(false);
+  const [settingsLoaded, setSettingsLoaded] = useState(() => !!localStorage.getItem('tm_shop_settings'));
+  const [productsLoaded, setProductsLoaded] = useState(() => !!localStorage.getItem('tm_shop_products'));
+  const [categoriesLoaded, setCategoriesLoaded] = useState(() => !!localStorage.getItem('tm_shop_categories'));
+  const [slidersLoaded, setSlidersLoaded] = useState(() => !!localStorage.getItem('tm_shop_sliders'));
   const ADMIN_EMAILS = ['rsjonayed07@gmail.com', 'tamimbhai23@gmail.com'];
   const [cart, setCart] = useState<OrderItem[]>(() => {
     const saved = localStorage.getItem('panjabi_cart');
@@ -205,8 +214,10 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           id: key
         })).sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
         setProducts(productList);
+        localStorage.setItem('tm_shop_products', JSON.stringify(productList));
       } else {
         setProducts([]);
+        localStorage.removeItem('tm_shop_products');
       }
       setProductsLoaded(true);
     });
@@ -224,8 +235,10 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           id: key
         })).sort((a, b) => a.name.localeCompare(b.name));
         setCategories(categoryList);
+        localStorage.setItem('tm_shop_categories', JSON.stringify(categoryList));
       } else {
         setCategories([]);
+        localStorage.removeItem('tm_shop_categories');
       }
       setCategoriesLoaded(true);
     });
@@ -243,8 +256,10 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           id: key
         })).sort((a, b) => new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime());
         setSliders(sliderList);
+        localStorage.setItem('tm_shop_sliders', JSON.stringify(sliderList));
       } else {
         setSliders([]);
+        localStorage.removeItem('tm_shop_sliders');
       }
       setSlidersLoaded(true);
     });
