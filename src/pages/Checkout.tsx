@@ -121,7 +121,8 @@ export default function Checkout() {
         price: product.price,
         quantity: quantity,
         size: selectedSize,
-        image: product.image
+        image: product.image,
+        slug: product.slug
       }],
       totalAmount: totalAmount,
       deliveryCharge: shippingCharge,

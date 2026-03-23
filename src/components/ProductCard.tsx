@@ -21,7 +21,8 @@ export default function ProductCard({ product }: ProductCardProps) {
       price: product.price,
       quantity: 1,
       size: product.sizes ? product.sizes[0] : 'Standard',
-      image: product.image
+      image: product.image,
+      slug: product.slug
     });
   };
 

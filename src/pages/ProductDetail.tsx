@@ -187,7 +187,8 @@ export default function ProductDetail() {
                         price: product.price,
                         image: product.image,
                         quantity,
-                        size: selectedSize
+                        size: selectedSize,
+                        slug: product.slug
                       });
                       alert('Added to cart!');
                     }}

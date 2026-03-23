@@ -6,13 +6,19 @@ import { motion } from 'motion/react';
 import AuthModal from '../components/AuthModal';
 
 export default function Orders() {
-  const { user, orders, authLoading } = useStore();
+  const { user, orders, authLoading, products } = useStore();
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [activeFilter, setActiveFilter] = useState('All Orders');
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
 
   if (authLoading) return null;
+
+  const getProductSlug = (item: any) => {
+    if (item.slug) return item.slug;
+    const product = products.find(p => p.id === item.productId);
+    return product?.slug || '';
+  };
 
   if (!user) {
     return (
@@ -145,7 +151,17 @@ export default function Orders() {
                         <td className="py-4">
                           <div className="space-y-1">
                             <p className="font-bold text-gray-900">#{order.id.slice(-8).toUpperCase()}</p>
-                            <p className="text-xs text-gray-500">{order.items.length} items</p>
+                            <div className="flex flex-col gap-1">
+                              <p className="text-xs text-gray-500">{order.items.length} items</p>
+                              {order.items.length === 1 && (
+                                <Link 
+                                  to={`/product/${getProductSlug(order.items[0])}`}
+                                  className="text-[10px] text-red-600 font-bold hover:underline w-fit"
+                                >
+                                  View Product
+                                </Link>
+                              )}
+                            </div>
                           </div>
                         </td>
                         <td className="py-4">

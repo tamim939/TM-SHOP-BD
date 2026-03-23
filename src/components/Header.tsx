@@ -1,5 +1,5 @@
-import { ShoppingBag, Heart, User, Search, Menu, X, Phone, LayoutGrid, Camera } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { ShoppingBag, Heart, User, Search, Menu, X, Phone, LayoutGrid, Camera, MessageCircle, HelpCircle } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -13,17 +13,31 @@ function cn(...inputs: ClassValue[]) {
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isSearchOverlayOpen, setIsSearchOverlayOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const { cart, user, allUsers, settings, products } = useStore();
   const navigate = useNavigate();
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   const filteredProducts = products.filter(p => 
     p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     (p.category && p.category.toLowerCase().includes(searchQuery.toLowerCase()))
   ).slice(0, 5);
 
+  const popularSearches = [
+    'Bluetooth Speaker', 'Cable Management', 'Laptop Sleeve', 
+    'Phone Stand', 'Backpack', 'Screen Protector', 
+    'Wrist Rest', 'Phone Charger'
+  ];
+
   const dbUser = allUsers.find(u => u.uid === user?.uid);
   const userPhoto = dbUser?.photoURL || user?.photoURL;
+
+  useEffect(() => {
+    if (isSearchOverlayOpen && searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  }, [isSearchOverlayOpen]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -39,6 +53,14 @@ export default function Header() {
     if (!logo) return false;
     if (logo.includes('smartpanjabishop.com')) return false;
     return true;
+  };
+
+  const handleSearch = (query: string) => {
+    if (query.trim()) {
+      navigate(`/shop?q=${query}`);
+      setSearchQuery('');
+      setIsSearchOverlayOpen(false);
+    }
   };
 
   return (
@@ -103,114 +125,150 @@ export default function Header() {
         {/* Search Bar - Integrated */}
         <div className="hidden md:flex flex-1 justify-center relative mx-4">
           <div className="relative w-full max-w-2xl">
-            <input 
-              type="text" 
-              placeholder="Search products..." 
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && searchQuery.trim()) {
-                  navigate(`/shop?q=${searchQuery}`);
-                  setSearchQuery('');
-                }
-              }}
-              className="w-full bg-gray-100 rounded-full py-2.5 px-6 focus:outline-none focus:ring-2 focus:ring-red-500/20 text-sm border border-gray-200"
-            />
-            <button 
-              onClick={() => {
-                if (searchQuery.trim()) {
-                  navigate(`/shop?q=${searchQuery}`);
-                  setSearchQuery('');
-                }
-              }}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-600 transition-colors"
+            <div 
+              onClick={() => setIsSearchOverlayOpen(true)}
+              className="w-full bg-gray-100 rounded-full py-2.5 px-6 cursor-pointer border border-gray-200 flex items-center justify-between text-gray-400"
             >
+              <span className="text-sm">Search products...</span>
               <Search size={20} />
-            </button>
+            </div>
           </div>
         </div>
 
         {/* Mobile Search Bar */}
-        <div className="md:hidden flex-1 flex flex-col items-center px-2 space-y-2">
-          <div className="relative w-full max-w-full">
-            <input 
-              type="text" 
-              placeholder="Search..." 
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && searchQuery.trim()) {
-                  navigate(`/shop?q=${searchQuery}`);
-                  setSearchQuery('');
-                }
-              }}
-              className="w-full bg-gray-100 rounded-full py-2 px-4 focus:outline-none text-xs border border-gray-200"
-            />
+        <div className="md:hidden flex-1 flex flex-col items-center px-2">
+          <div 
+            onClick={() => setIsSearchOverlayOpen(true)}
+            className="w-full bg-gray-100 rounded-full py-2 px-4 border border-gray-200 flex items-center justify-between text-gray-400"
+          >
+            <span className="text-xs">Search...</span>
+            <Search size={16} />
           </div>
-          {searchQuery && (
-            <div className="flex justify-center w-full">
-              <button
-                onClick={() => {
-                  if (searchQuery.trim()) {
-                    navigate(`/shop?q=${searchQuery}`);
-                    setSearchQuery('');
-                  }
-                }}
-                className="bg-red-600 text-white px-8 py-2 rounded-full text-xs font-bold shadow-lg shadow-red-100 active:scale-95 transition-all"
-              >
-                Search
-              </button>
-            </div>
-          )}
         </div>
 
         {/* Actions */}
         <div className="flex items-center space-x-1">
-          <button className="text-gray-400 p-2 hidden sm:block">
-            <LayoutGrid size={20} />
-          </button>
+          <Link to="/support" className="p-2 text-gray-400 hover:text-red-600 transition-colors rounded-full hover:bg-gray-100">
+            <HelpCircle size={24} />
+          </Link>
+          
+          <div className="hidden md:flex items-center space-x-1">
+            <Link to="/wishlist" className="p-2 text-gray-400 hover:text-red-600 transition-colors rounded-full hover:bg-gray-100 relative">
+              <Heart size={24} />
+              {useStore().wishlist.length > 0 && (
+                <span className="absolute top-1 right-1 bg-red-600 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center border-2 border-white">
+                  {useStore().wishlist.length}
+                </span>
+              )}
+            </Link>
+            <Link to="/cart" className="p-2 text-gray-400 hover:text-red-600 transition-colors rounded-full hover:bg-gray-100 relative">
+              <ShoppingBag size={24} />
+              {cartCount > 0 && (
+                <span className="absolute top-1 right-1 bg-red-600 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center border-2 border-white">
+                  {cartCount}
+                </span>
+              )}
+            </Link>
+            <Link to="/profile" className="p-2 text-gray-400 hover:text-red-600 transition-colors rounded-full hover:bg-gray-100">
+              {userPhoto ? (
+                <img src={userPhoto} alt="" className="w-6 h-6 rounded-full object-cover" referrerPolicy="no-referrer" />
+              ) : (
+                <User size={24} />
+              )}
+            </Link>
+          </div>
         </div>
       </div>
 
-      {/* Search Results Preview */}
+      {/* Search Overlay */}
       <AnimatePresence>
-        {searchQuery && (
-          <motion.div 
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className="absolute top-full left-0 right-0 bg-white shadow-xl border-t border-gray-100 overflow-hidden z-50"
+        {isSearchOverlayOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-white z-[100] overflow-y-auto"
           >
-            <div className="container max-w-xl py-2">
-              {filteredProducts.length > 0 ? (
-                <div className="divide-y divide-gray-100">
-                  {filteredProducts.map(product => (
-                    <Link
-                      key={product.id}
-                      to={`/product/${product.slug}`}
-                      onClick={() => setSearchQuery('')}
-                      className="flex items-center p-3 hover:bg-gray-50 transition-colors"
-                    >
-                      <img src={product.image} alt="" className="w-12 h-12 object-cover rounded-lg mr-4" referrerPolicy="no-referrer" />
-                      <div>
-                        <p className="font-bold text-sm text-gray-900">{product.name}</p>
-                        <p className="text-xs text-red-600 font-bold">Tk {product.price}</p>
-                      </div>
-                    </Link>
-                  ))}
-                  <Link
-                    to={`/shop?q=${searchQuery}`}
-                    onClick={() => setSearchQuery('')}
-                    className="block p-3 text-center text-sm font-bold text-red-600 hover:bg-gray-50 transition-colors"
-                  >
-                    View all results
-                  </Link>
+            <div className="container px-4 py-4">
+              <div className="flex items-center space-x-2 mb-6">
+                <div className="flex-1 relative">
+                  <input
+                    ref={searchInputRef}
+                    type="text"
+                    placeholder="Search products..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleSearch(searchQuery)}
+                    className="w-full bg-gray-100 rounded-full py-3 px-6 focus:outline-none border border-gray-200 text-sm"
+                  />
+                </div>
+                <button
+                  onClick={() => handleSearch(searchQuery)}
+                  className="bg-red-600 text-white px-6 py-3 rounded-full font-bold text-sm shadow-lg shadow-red-100 active:scale-95 transition-all"
+                >
+                  Search
+                </button>
+              </div>
+
+              {searchQuery ? (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest">Search Results</h3>
+                  </div>
+                  <div className="divide-y divide-gray-100">
+                    {filteredProducts.length > 0 ? (
+                      filteredProducts.map(product => (
+                        <Link
+                          key={product.id}
+                          to={`/product/${product.slug}`}
+                          onClick={() => {
+                            setSearchQuery('');
+                            setIsSearchOverlayOpen(false);
+                          }}
+                          className="flex items-center p-3 hover:bg-gray-50 transition-colors"
+                        >
+                          <img src={product.image} alt="" className="w-12 h-12 object-cover rounded-lg mr-4" referrerPolicy="no-referrer" />
+                          <div>
+                            <p className="font-bold text-sm text-gray-900">{product.name}</p>
+                            <p className="text-xs text-red-600 font-bold">Tk {product.price}</p>
+                          </div>
+                        </Link>
+                      ))
+                    ) : (
+                      <p className="text-center py-10 text-gray-500 text-sm">No products found for "{searchQuery}"</p>
+                    )}
+                  </div>
                 </div>
               ) : (
-                <div className="p-6 text-center text-gray-500 text-sm">
-                  No products found for "{searchQuery}"
+                <div className="space-y-8">
+                  <div>
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest">Popular Searches</h3>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {popularSearches.map(tag => (
+                        <button
+                          key={tag}
+                          onClick={() => handleSearch(tag)}
+                          className="px-4 py-2 bg-gray-50 border border-gray-100 rounded-full text-xs font-bold text-gray-600 hover:bg-red-50 hover:text-red-600 hover:border-red-100 transition-all"
+                        >
+                          {tag}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               )}
+
+              <div className="mt-8 flex justify-center">
+                <button
+                  onClick={() => setIsSearchOverlayOpen(false)}
+                  className="flex items-center space-x-2 text-gray-400 hover:text-red-600 transition-colors font-bold text-sm"
+                >
+                  <X size={20} />
+                  <span>Cancel</span>
+                </button>
+              </div>
             </div>
           </motion.div>
         )}

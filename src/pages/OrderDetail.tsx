@@ -7,7 +7,7 @@ import { motion } from 'motion/react';
 export default function OrderDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { orders, authLoading, user, isAdmin } = useStore();
+  const { orders, authLoading, user, isAdmin, products } = useStore();
 
   if (authLoading) {
     return (
@@ -18,6 +18,12 @@ export default function OrderDetail() {
   }
 
   const order = orders.find(o => o.id === id);
+
+  const getProductSlug = (item: any) => {
+    if (item.slug) return item.slug;
+    const product = products.find(p => p.id === item.productId);
+    return product?.slug || '';
+  };
 
   if (!order || (user && order.userId !== user.uid && !isAdmin)) {
     return (
@@ -184,7 +190,7 @@ export default function OrderDetail() {
                       <div className="text-right">
                         <p className="font-black text-lg text-gray-900">BDT {item.price * item.quantity}</p>
                         <Link 
-                          to={`/product/${item.slug || ''}`}
+                          to={`/product/${getProductSlug(item)}`}
                           className="text-red-600 text-xs font-black flex items-center justify-end space-x-1 hover:underline mt-1"
                         >
                           <Eye size={14} />

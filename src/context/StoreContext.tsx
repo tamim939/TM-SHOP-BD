@@ -161,7 +161,17 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       twitterLink: 'https://twitter.com',
       youtubeLink: 'https://youtube.com',
       instagramLink: 'https://instagram.com',
-      linkedinLink: 'https://linkedin.com'
+      linkedinLink: 'https://linkedin.com',
+      supportTitle: 'Support Center',
+      supportDescription: "We're here to help! Get in touch with our customer support team for any questions or assistance.",
+      supportCallTitle: 'Call Us',
+      supportCallDescription: 'Speak directly with our support team for immediate assistance.',
+      supportPhoneNumber: '+880 1993 644346',
+      supportHours: 'Sat-Thu: 9AM - 8PM',
+      supportWhatsappTitle: 'WhatsApp',
+      supportWhatsappDescription: 'Chat with us on WhatsApp for quick responses and support.',
+      supportWhatsappNumber: '+880 1993 644346',
+      supportWhatsappResponseTime: 'Typically responds within minutes'
     };
   });
   const [user, setUser] = useState<User | null>(null);

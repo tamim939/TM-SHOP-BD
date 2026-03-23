@@ -1842,10 +1842,120 @@ const Admin: React.FC = () => {
                       <label className="block text-sm font-medium text-gray-700 mb-2">Advance Payment (%)</label>
                       <input
                         type="number"
-                        value={settings.advancePaymentPercentage || 0}
-                        onChange={e => updateSettings({ ...settings, advancePaymentPercentage: Number(e.target.value) })}
+                        value={localSettings.advancePaymentPercentage || 0}
+                        onChange={e => setLocalSettings({ ...localSettings, advancePaymentPercentage: Number(e.target.value) })}
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
                       />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="border-t pt-6 mt-6">
+                  <h3 className="text-lg font-bold mb-4">Support Center Settings</h3>
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Support Title</label>
+                        <input
+                          type="text"
+                          value={localSettings.supportTitle || ''}
+                          onChange={e => setLocalSettings({ ...localSettings, supportTitle: e.target.value })}
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Support Description</label>
+                        <input
+                          type="text"
+                          value={localSettings.supportDescription || ''}
+                          onChange={e => setLocalSettings({ ...localSettings, supportDescription: e.target.value })}
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100 space-y-4">
+                      <h4 className="font-bold text-gray-800">Call Support</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Call Title</label>
+                          <input
+                            type="text"
+                            value={localSettings.supportCallTitle || ''}
+                            onChange={e => setLocalSettings({ ...localSettings, supportCallTitle: e.target.value })}
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Call Description</label>
+                          <input
+                            type="text"
+                            value={localSettings.supportCallDescription || ''}
+                            onChange={e => setLocalSettings({ ...localSettings, supportCallDescription: e.target.value })}
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+                          <input
+                            type="text"
+                            value={localSettings.supportPhoneNumber || ''}
+                            onChange={e => setLocalSettings({ ...localSettings, supportPhoneNumber: e.target.value })}
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Support Hours</label>
+                          <input
+                            type="text"
+                            value={localSettings.supportHours || ''}
+                            onChange={e => setLocalSettings({ ...localSettings, supportHours: e.target.value })}
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100 space-y-4">
+                      <h4 className="font-bold text-gray-800">WhatsApp Support</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">WhatsApp Title</label>
+                          <input
+                            type="text"
+                            value={localSettings.supportWhatsappTitle || ''}
+                            onChange={e => setLocalSettings({ ...localSettings, supportWhatsappTitle: e.target.value })}
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">WhatsApp Description</label>
+                          <input
+                            type="text"
+                            value={localSettings.supportWhatsappDescription || ''}
+                            onChange={e => setLocalSettings({ ...localSettings, supportWhatsappDescription: e.target.value })}
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">WhatsApp Number</label>
+                          <input
+                            type="text"
+                            value={localSettings.supportWhatsappNumber || ''}
+                            onChange={e => setLocalSettings({ ...localSettings, supportWhatsappNumber: e.target.value })}
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Response Time</label>
+                          <input
+                            type="text"
+                            value={localSettings.supportWhatsappResponseTime || ''}
+                            onChange={e => setLocalSettings({ ...localSettings, supportWhatsappResponseTime: e.target.value })}
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
+                          />
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>

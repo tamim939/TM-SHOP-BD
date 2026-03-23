@@ -35,6 +35,7 @@ export interface OrderItem {
   quantity: number;
   size: string;
   image: string;
+  slug?: string;
 }
 
 export interface Order {
@@ -135,4 +136,14 @@ export interface Settings {
   youtubeLink?: string;
   instagramLink?: string;
   linkedinLink?: string;
+  supportTitle?: string;
+  supportDescription?: string;
+  supportCallTitle?: string;
+  supportCallDescription?: string;
+  supportPhoneNumber?: string;
+  supportHours?: string;
+  supportWhatsappTitle?: string;
+  supportWhatsappDescription?: string;
+  supportWhatsappNumber?: string;
+  supportWhatsappResponseTime?: string;
 }
