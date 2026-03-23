@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import Header from './components/Header';
 import Footer from './components/Footer';
+import FloatingSupport from './components/FloatingSupport';
 import Home from './pages/Home';
 import Shop from './pages/Shop';
 import ProductDetail from './pages/ProductDetail';
@@ -48,7 +49,7 @@ function Layout() {
       </main>
       {!isAdminPage && <Footer />}
       {!isAdminPage && <BottomNav />}
-      
+      {!isAdminPage && <FloatingSupport />}
     </div>
   );
 }

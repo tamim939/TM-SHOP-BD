@@ -56,7 +56,7 @@ export default function Home() {
               
               <AutoScrollRow>
                 {categoryProducts.map((product) => (
-                  <div key={product.id} className="min-w-[130px] max-w-[150px] md:min-w-[180px] lg:min-w-[200px] flex-shrink-0">
+                  <div key={product.id} className="min-w-[160px] max-w-[180px] md:min-w-[180px] lg:min-w-[200px] flex-shrink-0">
                     <ProductCard product={product} />
                   </div>
                 ))}

@@ -148,15 +148,6 @@ export default function Header() {
 
         {/* Actions */}
         <div className="flex items-center space-x-1">
-          <Link 
-            to="/support" 
-            className="p-2 text-gray-400 hover:text-red-600 transition-all rounded-full hover:bg-red-50 group relative"
-            title="Support Center"
-          >
-            <HelpCircle size={24} className="group-hover:scale-110 transition-transform" />
-            <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-600 rounded-full border border-white animate-pulse" />
-          </Link>
-          
           <div className="hidden md:flex items-center space-x-1">
             <Link to="/wishlist" className="p-2 text-gray-400 hover:text-red-600 transition-colors rounded-full hover:bg-gray-100 relative">
               <Heart size={24} />

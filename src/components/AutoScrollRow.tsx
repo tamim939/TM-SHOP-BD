@@ -16,7 +16,7 @@ const AutoScrollRow: React.FC<AutoScrollRowProps> = ({ children }) => {
     const scroll = () => {
       if (!isPaused && scrollContainer) {
         const isMobile = window.innerWidth < 768;
-        const itemWidth = isMobile ? 146 : 216; // card width + gap
+        const itemWidth = isMobile ? 176 : 216; // card width (160) + gap (16)
         const currentScroll = scrollContainer.scrollLeft;
         
         // Calculate next scroll position to align with start of an item

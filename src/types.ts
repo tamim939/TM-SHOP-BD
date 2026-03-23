@@ -131,7 +131,6 @@ export interface Settings {
   showNotice?: boolean;
   noticeText?: string;
   showPaymentGateway?: boolean;
-  facebookLink?: string;
   twitterLink?: string;
   youtubeLink?: string;
   instagramLink?: string;
@@ -142,6 +141,9 @@ export interface Settings {
   supportCallDescription?: string;
   supportPhoneNumber?: string;
   supportHours?: string;
+  supportMessengerTitle?: string;
+  supportMessengerDescription?: string;
+  supportMessengerLink?: string;
   supportWhatsappTitle?: string;
   supportWhatsappDescription?: string;
   supportWhatsappNumber?: string;

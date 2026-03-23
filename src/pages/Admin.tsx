@@ -1679,12 +1679,12 @@ const Admin: React.FC = () => {
                   <h3 className="text-lg font-bold mb-4">Social Media Links</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Facebook Link</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Messenger Link</label>
                       <input
                         type="text"
-                        value={localSettings.facebookLink || ''}
-                        onChange={e => setLocalSettings({ ...localSettings, facebookLink: e.target.value })}
-                        placeholder="https://facebook.com/yourpage"
+                        value={localSettings.messengerLink || ''}
+                        onChange={e => setLocalSettings({ ...localSettings, messengerLink: e.target.value })}
+                        placeholder="https://m.me/yourpage"
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
                       />
                     </div>
@@ -1875,41 +1875,32 @@ const Admin: React.FC = () => {
                     </div>
 
                     <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100 space-y-4">
-                      <h4 className="font-bold text-gray-800">Call Support</h4>
+                      <h4 className="font-bold text-gray-800">Messenger Support</h4>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">Call Title</label>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Messenger Title</label>
                           <input
                             type="text"
-                            value={localSettings.supportCallTitle || ''}
-                            onChange={e => setLocalSettings({ ...localSettings, supportCallTitle: e.target.value })}
+                            value={localSettings.supportMessengerTitle || ''}
+                            onChange={e => setLocalSettings({ ...localSettings, supportMessengerTitle: e.target.value })}
                             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">Call Description</label>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Messenger Description</label>
                           <input
                             type="text"
-                            value={localSettings.supportCallDescription || ''}
-                            onChange={e => setLocalSettings({ ...localSettings, supportCallDescription: e.target.value })}
+                            value={localSettings.supportMessengerDescription || ''}
+                            onChange={e => setLocalSettings({ ...localSettings, supportMessengerDescription: e.target.value })}
                             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
                           />
                         </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+                        <div className="md:col-span-2">
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Messenger Link (m.me/yourpage)</label>
                           <input
                             type="text"
-                            value={localSettings.supportPhoneNumber || ''}
-                            onChange={e => setLocalSettings({ ...localSettings, supportPhoneNumber: e.target.value })}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">Support Hours</label>
-                          <input
-                            type="text"
-                            value={localSettings.supportHours || ''}
-                            onChange={e => setLocalSettings({ ...localSettings, supportHours: e.target.value })}
+                            value={localSettings.supportMessengerLink || ''}
+                            onChange={e => setLocalSettings({ ...localSettings, supportMessengerLink: e.target.value })}
                             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
                           />
                         </div>
