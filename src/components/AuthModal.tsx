@@ -46,78 +46,101 @@ export default function AuthModal({ onSuccess }: AuthModalProps) {
   };
 
   return (
-    <div className="bg-white p-8 rounded-2xl shadow-sm max-w-md w-full">
-      <h2 className="text-2xl font-bold mb-6 text-center">
-        {isLogin ? 'Login' : 'Create Account'}
-      </h2>
-      
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {!isLogin && (
+    <div className="w-full max-w-md mx-auto">
+      {/* Tab Switcher */}
+      <div className="bg-gray-100 p-1.5 rounded-2xl flex mb-8">
+        <button
+          onClick={() => setIsLogin(true)}
+          className={`flex-1 py-3 rounded-xl font-bold text-sm transition-all ${
+            isLogin 
+              ? 'bg-white text-gray-900 shadow-sm' 
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          Login
+        </button>
+        <button
+          onClick={() => setIsLogin(false)}
+          className={`flex-1 py-3 rounded-xl font-bold text-sm transition-all ${
+            !isLogin 
+              ? 'bg-white text-gray-900 shadow-sm' 
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          Register
+        </button>
+      </div>
+
+      <div className="bg-white p-8 rounded-[32px] shadow-sm border border-gray-100">
+        <div className="mb-8">
+          <h2 className="text-2xl font-black text-gray-900 mb-2">
+            {isLogin ? 'Welcome Back!' : 'Create Account'}
+          </h2>
+          <p className="text-gray-500 text-sm font-medium">
+            {isLogin ? 'Login with your email or phone' : 'Join us to start shopping'}
+          </p>
+        </div>
+        
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {!isLogin && (
+            <div>
+              <label className="block text-sm font-bold text-gray-900 mb-2">Name</label>
+              <div className="relative">
+                <input 
+                  type="text" 
+                  required
+                  value={name}
+                  onChange={e => setName(e.target.value)}
+                  className="w-full px-4 py-3.5 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-red-500/20 focus:border-red-500 outline-none transition-all placeholder:text-gray-300 font-medium"
+                  placeholder="Your Name"
+                />
+              </div>
+            </div>
+          )}
+          
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+            <label className="block text-sm font-bold text-gray-900 mb-2">Email or Phone</label>
             <div className="relative">
-              <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
               <input 
-                type="text" 
+                type="email" 
                 required
-                value={name}
-                onChange={e => setName(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 outline-none"
-                placeholder="Your Name"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                className="w-full px-4 py-3.5 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-red-500/20 focus:border-red-500 outline-none transition-all placeholder:text-gray-300 font-medium"
+                placeholder="email@example.com or 01XXXXXXXXX"
               />
             </div>
           </div>
-        )}
-        
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-          <div className="relative">
-            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-            <input 
-              type="email" 
-              required
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 outline-none"
-              placeholder="example@mail.com"
-            />
+
+          <div>
+            <label className="block text-sm font-bold text-gray-900 mb-2">Password</label>
+            <div className="relative">
+              <input 
+                type="password" 
+                required
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                className="w-full px-4 py-3.5 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-red-500/20 focus:border-red-500 outline-none transition-all placeholder:text-gray-300 font-medium"
+                placeholder="••••••••"
+              />
+            </div>
           </div>
-        </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-          <div className="relative">
-            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-            <input 
-              type="password" 
-              required
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 outline-none"
-              placeholder="••••••••"
-            />
-          </div>
-        </div>
+          {error && (
+            <div className="bg-red-50 text-red-600 p-3 rounded-xl text-xs font-bold">
+              {error}
+            </div>
+          )}
 
-        {error && <p className="text-red-500 text-sm">{error}</p>}
-
-        <button 
-          type="submit"
-          disabled={loading}
-          className="w-full bg-red-600 text-white py-3 rounded-xl font-bold hover:bg-red-700 transition-colors flex items-center justify-center space-x-2 disabled:opacity-50"
-        >
-          <span>{loading ? 'Please wait...' : (isLogin ? 'Login' : 'Sign Up')}</span>
-          {!loading && <ArrowRight size={20} />}
-        </button>
-      </form>
-
-      <div className="mt-6 text-center">
-        <button 
-          onClick={() => setIsLogin(!isLogin)}
-          className="text-red-600 font-medium hover:underline"
-        >
-          {isLogin ? "Don't have an account? Sign Up" : 'Already have an account? Login'}
-        </button>
+          <button 
+            type="submit"
+            disabled={loading}
+            className="w-full bg-red-600 text-white py-4 rounded-2xl font-black hover:bg-red-700 transition-all flex items-center justify-center space-x-2 disabled:opacity-50 shadow-lg shadow-red-100 active:scale-[0.98]"
+          >
+            <span>{loading ? 'Please wait...' : (isLogin ? 'Login' : 'Register')}</span>
+            {!loading && <ArrowRight size={20} />}
+          </button>
+        </form>
       </div>
     </div>
   );
