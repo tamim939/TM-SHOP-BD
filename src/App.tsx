@@ -15,18 +15,13 @@ import Orders from './pages/Orders';
 import OrderDetail from './pages/OrderDetail';
 import ScrollToTop from './components/ScrollToTop';
 import BottomNav from './components/BottomNav';
-import LoadingScreen from './components/LoadingScreen';
 import { StoreProvider, useStore } from './context/StoreContext';
 
 function Layout() {
-  const { settings, isAppReady } = useStore();
+  const { settings } = useStore();
   const location = window.location.pathname;
   const isAdminPage = location === '/admin';
   const hasNotice = settings.showNotice && settings.noticeText && settings.noticeText.trim() !== '';
-
-  if (!isAppReady) {
-    return <LoadingScreen />;
-  }
 
   return (
     <div className="min-h-screen flex flex-col">
