@@ -44,8 +44,8 @@ export default function Header() {
   return (
     <header 
       className={cn(
-        "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
-        isScrolled ? "bg-white shadow-md" : "bg-white border-b"
+        "fixed top-0 left-0 right-0 z-50 bg-white",
+        isScrolled ? "shadow-md" : "border-b"
       )}
     >
       {/* Notice Bar */}
@@ -101,51 +101,65 @@ export default function Header() {
         </div>
 
         {/* Search Bar - Integrated */}
-        <div className="hidden md:flex flex-1 max-w-xl relative">
-          <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
-            <Camera size={20} />
+        <div className="hidden md:flex flex-1 justify-center relative mx-4">
+          <div className="relative w-full max-w-xl">
+            <input 
+              type="text" 
+              placeholder="Search products..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && searchQuery.trim()) {
+                  navigate(`/shop?q=${searchQuery}`);
+                  setSearchQuery('');
+                }
+              }}
+              className="w-full bg-gray-100 rounded-full py-2.5 px-6 focus:outline-none focus:ring-2 focus:ring-red-500/20 text-sm border border-gray-200"
+            />
+            <button 
+              onClick={() => {
+                if (searchQuery.trim()) {
+                  navigate(`/shop?q=${searchQuery}`);
+                  setSearchQuery('');
+                }
+              }}
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-600 transition-colors"
+            >
+              <Search size={20} />
+            </button>
           </div>
-          <input 
-            type="text" 
-            placeholder="Search products..." 
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && searchQuery.trim()) {
-                navigate(`/shop?q=${searchQuery}`);
-                setSearchQuery('');
-              }
-            }}
-            className="w-full bg-gray-100 rounded-full py-2.5 pl-12 pr-12 focus:outline-none focus:ring-2 focus:ring-red-500/20 text-sm border border-gray-200"
-          />
-          <button 
-            onClick={() => {
-              if (searchQuery.trim()) {
-                navigate(`/shop?q=${searchQuery}`);
-                setSearchQuery('');
-              }
-            }}
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400"
-          >
-            <Search size={20} />
-          </button>
         </div>
 
-        {/* Mobile Search Icon */}
-        <div className="md:hidden flex-1 flex justify-end">
-          <div className="relative w-full max-w-[200px]">
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-              <Camera size={16} />
-            </div>
+        {/* Mobile Search Bar */}
+        <div className="md:hidden flex-1 flex flex-col items-center px-2 space-y-2">
+          <div className="relative w-full max-w-[280px]">
             <input 
               type="text" 
               placeholder="Search..." 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-gray-100 rounded-full py-2 pl-9 pr-8 focus:outline-none text-xs border border-gray-200"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && searchQuery.trim()) {
+                  navigate(`/shop?q=${searchQuery}`);
+                  setSearchQuery('');
+                }
+              }}
+              className="w-full bg-gray-100 rounded-full py-2 px-4 focus:outline-none text-xs border border-gray-200"
             />
-            <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
           </div>
+          {searchQuery && (
+            <button
+              onClick={() => {
+                if (searchQuery.trim()) {
+                  navigate(`/shop?q=${searchQuery}`);
+                  setSearchQuery('');
+                }
+              }}
+              className="bg-red-600 text-white px-6 py-1.5 rounded-full text-[10px] font-bold shadow-sm"
+            >
+              Search
+            </button>
+          )}
         </div>
 
         {/* Actions */}

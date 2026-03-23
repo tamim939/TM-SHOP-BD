@@ -8,7 +8,7 @@ import { sendTelegramNotification } from '../utils/telegram';
 export default function Checkout() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { addOrder, settings, user, coupons, categories } = useStore();
+  const { addOrder, settings, user, categories } = useStore();
   const { product, selectedSize, quantity } = location.state || {};
 
   useEffect(() => {
@@ -82,14 +82,7 @@ export default function Checkout() {
   const handleApplyCoupon = () => {
     setCouponError('');
     const upperCode = couponCode.toUpperCase();
-    const coupon = coupons.find(c => c.code.toUpperCase() === upperCode);
     
-    if (coupon) {
-      setAppliedCoupon(coupon);
-      setCouponCode('');
-      return;
-    }
-
     if (product.productCouponCode && upperCode === product.productCouponCode.toUpperCase()) {
       setAppliedCoupon({
         id: 'product-specific',

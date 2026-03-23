@@ -61,12 +61,8 @@ const Admin: React.FC = () => {
     deleteUser,
     allUsers: users,
     reviews,
-    coupons,
     deleteReview,
     addAdminReply,
-    addCoupon,
-    updateCoupon,
-    deleteCoupon,
     user,
     updateUserProfile
   } = useStore();
@@ -76,13 +72,11 @@ const Admin: React.FC = () => {
   const [isEditing, setIsEditing] = useState<any>(null);
   const [isEditingCategory, setIsEditingCategory] = useState<any>(null);
   const [isEditingSlider, setIsEditingSlider] = useState<any>(null);
-  const [isEditingCoupon, setIsEditingCoupon] = useState<any>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [showProductForm, setShowProductForm] = useState(false);
   const [showCategoryForm, setShowCategoryForm] = useState(false);
   const [showSliderForm, setShowSliderForm] = useState(false);
-  const [showCouponForm, setShowCouponForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [replyText, setReplyText] = useState<{ [key: string]: string }>({});
@@ -117,12 +111,6 @@ const Admin: React.FC = () => {
     image: '',
     mobileImage: '',
     link: ''
-  });
-
-  const [couponData, setCouponData] = useState({
-    code: '',
-    discount: '',
-    type: 'percentage' as 'percentage' | 'fixed'
   });
 
   useEffect(() => {
@@ -350,39 +338,6 @@ const Admin: React.FC = () => {
     }
   };
 
-  const handleSaveCoupon = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSaving(true);
-    try {
-      if (!couponData.code || !couponData.discount) {
-        alert("Please provide code and discount.");
-        setIsSaving(false);
-        return;
-      }
-
-      const finalCouponData = {
-        code: couponData.code.toUpperCase(),
-        discount: Number(couponData.discount),
-        type: couponData.type,
-        createdAt: isEditingCoupon?.createdAt || new Date().toISOString()
-      };
-
-      if (isEditingCoupon) {
-        await updateCoupon({ ...finalCouponData, id: isEditingCoupon.id });
-      } else {
-        await addCoupon(finalCouponData);
-      }
-      setShowCouponForm(false);
-      setIsEditingCoupon(null);
-      setCouponData({ code: '', discount: '', type: 'percentage' });
-    } catch (error) {
-      console.error("Error saving coupon:", error);
-      alert("Error saving coupon.");
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
   const generateOrderPDF = (order: any) => {
     const doc = new jsPDF();
     
@@ -576,7 +531,6 @@ const Admin: React.FC = () => {
             { id: 'products', label: 'Products', icon: Package },
             { id: 'categories', label: 'Categories', icon: List },
             { id: 'sliders', label: 'Sliders', icon: ImageIcon },
-            { id: 'coupons', label: 'Coupons', icon: Ticket },
             { id: 'users', label: 'Users', icon: UsersIcon },
             { id: 'reviews', label: 'Reviews', icon: Star },
             { id: 'settings', label: 'Settings', icon: SettingsIcon },
@@ -1443,117 +1397,6 @@ const Admin: React.FC = () => {
                       >
                         <Trash2 className="w-4 h-4" />
                         <span>Delete</span>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        ) : activeTab === 'coupons' ? (
-          <div className="space-y-6">
-            <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold">Coupon Codes ({coupons.length})</h2>
-              <button
-                onClick={() => {
-                  setIsEditingCoupon(null);
-                  setCouponData({ code: '', discount: '', type: 'percentage' });
-                  setShowCouponForm(true);
-                }}
-                className="flex items-center space-x-2 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
-              >
-                <Plus className="w-5 h-5" />
-                <span>New Coupon</span>
-              </button>
-            </div>
-
-            {(showCouponForm || isEditingCoupon) && (
-              <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                <div className="bg-white rounded-2xl p-6 w-full max-w-md">
-                  <div className="flex justify-between items-center mb-6">
-                    <h3 className="text-xl font-bold">{isEditingCoupon ? 'Edit Coupon' : 'Add New Coupon'}</h3>
-                    <button onClick={() => { setShowCouponForm(false); setIsEditingCoupon(null); }} className="text-gray-400 hover:text-gray-600">
-                      <XCircle className="w-6 h-6" />
-                    </button>
-                  </div>
-                  <form onSubmit={handleSaveCoupon} className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Coupon Code</label>
-                      <input
-                        type="text"
-                        required
-                        placeholder="e.g. SAVE10"
-                        value={couponData.code}
-                        onChange={e => setCouponData({ ...couponData, code: e.target.value })}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none uppercase"
-                      />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Discount Type</label>
-                        <select
-                          value={couponData.type}
-                          onChange={e => setCouponData({ ...couponData, type: e.target.value as 'percentage' | 'fixed' })}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
-                        >
-                          <option value="percentage">Percentage (%)</option>
-                          <option value="fixed">Fixed (Tk)</option>
-                        </select>
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Discount Amount</label>
-                        <input
-                          type="number"
-                          required
-                          value={couponData.discount}
-                          onChange={e => setCouponData({ ...couponData, discount: e.target.value })}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
-                        />
-                      </div>
-                    </div>
-                    <div className="flex justify-end space-x-3 pt-4 border-t">
-                      <button
-                        type="button"
-                        onClick={() => { setShowCouponForm(false); setIsEditingCoupon(null); }}
-                        className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        type="submit"
-                        disabled={isSaving || isUploading}
-                        className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 font-bold"
-                      >
-                        {isSaving || isUploading ? 'Saving...' : 'Save'}
-                      </button>
-                    </div>
-                  </form>
-                </div>
-              </div>
-            )}
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {coupons.map(coupon => (
-                <div key={coupon.id} className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <h3 className="text-xl font-bold text-red-600">{coupon.code}</h3>
-                      <p className="text-sm text-gray-500">
-                        Discount: {coupon.discount}{coupon.type === 'percentage' ? '%' : ' Tk'}
-                      </p>
-                    </div>
-                    <div className="flex space-x-2">
-                      <button
-                        onClick={() => { setIsEditingCoupon(coupon); setCouponData({ code: coupon.code, discount: coupon.discount.toString(), type: coupon.type }); }}
-                        className="p-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
-                      >
-                        <Edit2 className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => deleteCoupon(coupon.id)}
-                        className="p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors"
-                      >
-                        <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
                   </div>

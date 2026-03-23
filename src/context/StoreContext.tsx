@@ -33,7 +33,6 @@ interface StoreContextType {
   products: Product[];
   categories: Category[];
   sliders: Slider[];
-  coupons: Coupon[];
   orders: Order[];
   reviews: Review[];
   cart: OrderItem[];
@@ -57,9 +56,6 @@ interface StoreContextType {
   addSlider: (slider: Omit<Slider, 'id'>) => Promise<void>;
   updateSlider: (slider: Slider) => Promise<void>;
   deleteSlider: (id: string) => Promise<void>;
-  addCoupon: (coupon: Omit<Coupon, 'id'>) => Promise<void>;
-  updateCoupon: (coupon: Coupon) => Promise<void>;
-  deleteCoupon: (id: string) => Promise<void>;
   addOrder: (order: Omit<Order, 'id'>) => Promise<void>;
   updateOrderStatus: (orderId: string, status: Order['status']) => Promise<void>;
   verifyPayment: (orderId: string, status: Order['paymentStatus']) => Promise<void>;
@@ -129,7 +125,6 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
     return [];
   });
-  const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [allUsers, setAllUsers] = useState<DBUser[]>([]);
@@ -299,24 +294,6 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         localStorage.removeItem('tm_shop_sliders');
       }
       setSlidersLoaded(true);
-    });
-    return () => unsubscribe();
-  }, []);
-
-  // Sync Coupons
-  useEffect(() => {
-    const couponsRef = ref(db, 'coupons');
-    const unsubscribe = onValue(couponsRef, (snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        const couponList = Object.keys(data).map(key => ({
-          ...data[key],
-          id: key
-        }));
-        setCoupons(couponList);
-      } else {
-        setCoupons([]);
-      }
     });
     return () => unsubscribe();
   }, []);
@@ -685,37 +662,6 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   };
 
-  const addCoupon = async (coupon: Omit<Coupon, 'id'>) => {
-    try {
-      const couponsRef = ref(db, 'coupons');
-      const newCouponRef = push(couponsRef);
-      await set(newCouponRef, { ...coupon, id: newCouponRef.key });
-    } catch (error) {
-      console.error("Error adding coupon:", error);
-      throw error;
-    }
-  };
-
-  const updateCoupon = async (updatedCoupon: Coupon) => {
-    try {
-      const couponRef = ref(db, `coupons/${updatedCoupon.id}`);
-      await set(couponRef, updatedCoupon);
-    } catch (error) {
-      console.error("Error updating coupon:", error);
-      throw error;
-    }
-  };
-
-  const deleteCoupon = async (id: string) => {
-    try {
-      const couponRef = ref(db, `coupons/${id}`);
-      await remove(couponRef);
-    } catch (error) {
-      console.error("Error deleting coupon:", error);
-      throw error;
-    }
-  };
-
   const addOrder = async (order: Omit<Order, 'id'>) => {
     try {
       const ordersRef = ref(db, 'orders');
@@ -883,7 +829,6 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       products, 
       categories,
       sliders,
-      coupons,
       orders, 
       reviews,
       cart, 
@@ -903,9 +848,6 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       addSlider,
       updateSlider,
       deleteSlider,
-      addCoupon,
-      updateCoupon,
-      deleteCoupon,
       addOrder, 
       updateOrderStatus,
       verifyPayment,

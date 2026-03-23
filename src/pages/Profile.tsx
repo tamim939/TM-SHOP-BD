@@ -24,17 +24,11 @@ export default function Profile() {
     }
   }, [userName]);
 
-  if (authLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center pt-20">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-red-600"></div>
-      </div>
-    );
-  }
+  if (authLoading) return null;
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gray-50 pt-24 pb-12 flex items-center justify-center px-4">
+      <div className="flex-1 flex items-center justify-center px-4 py-12">
         <AuthModal />
       </div>
     );
