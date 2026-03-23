@@ -13,12 +13,12 @@ export default function Home() {
   const uncategorizedProducts = useMemo(() => {
     if (!productsLoaded) return [];
     // Show all products that don't have a category
-    return products.filter(p => !p.category || p.category === 'none' || p.category === '').sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
+    return products.filter(p => !p.category || p.category === 'none' || p.category === '');
   }, [products, productsLoaded]);
 
   const sortedCategories = useMemo(() => {
     if (!categoriesLoaded) return [];
-    return [...categories].sort((a, b) => a.name.localeCompare(b.name));
+    return categories;
   }, [categories, categoriesLoaded]);
 
   return (

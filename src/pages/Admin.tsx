@@ -237,7 +237,8 @@ const Admin: React.FC = () => {
         maxImages: maxImages,
         isNew: formData.isNew,
         isHot: formData.isHot,
-        sizes: formData.sizes || []
+        sizes: formData.sizes || [],
+        createdAt: isEditing?.createdAt || new Date().toISOString()
       };
 
       if (formData.oldPrice) {
@@ -300,7 +301,8 @@ const Admin: React.FC = () => {
       const finalCategoryData = {
         ...categoryData,
         image: categoryData.image || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=1000&auto=format&fit=crop',
-        categoryCouponDiscount: categoryData.categoryCouponDiscount ? Number(categoryData.categoryCouponDiscount) : undefined
+        categoryCouponDiscount: categoryData.categoryCouponDiscount ? Number(categoryData.categoryCouponDiscount) : undefined,
+        createdAt: isEditingCategory?.createdAt || new Date().toISOString()
       };
 
       if (isEditingCategory) {
@@ -327,10 +329,15 @@ const Admin: React.FC = () => {
     e.preventDefault();
     setIsSaving(true);
     try {
+      const finalSliderData = {
+        ...sliderData,
+        createdAt: isEditingSlider?.createdAt || new Date().toISOString()
+      };
+
       if (isEditingSlider) {
-        await updateSlider({ ...sliderData, id: isEditingSlider.id });
+        await updateSlider({ ...finalSliderData, id: isEditingSlider.id });
       } else {
-        await addSlider(sliderData);
+        await addSlider(finalSliderData);
       }
       setShowSliderForm(false);
       setIsEditingSlider(null);
@@ -356,7 +363,8 @@ const Admin: React.FC = () => {
       const finalCouponData = {
         code: couponData.code.toUpperCase(),
         discount: Number(couponData.discount),
-        type: couponData.type
+        type: couponData.type,
+        createdAt: isEditingCoupon?.createdAt || new Date().toISOString()
       };
 
       if (isEditingCoupon) {

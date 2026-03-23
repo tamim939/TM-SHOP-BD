@@ -193,7 +193,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         const productList = Object.keys(data).map(key => ({
           ...data[key],
           id: key
-        }));
+        })).sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
         setProducts(productList);
       } else {
         setProducts([]);
@@ -212,7 +212,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         const categoryList = Object.keys(data).map(key => ({
           ...data[key],
           id: key
-        }));
+        })).sort((a, b) => a.name.localeCompare(b.name));
         setCategories(categoryList);
       } else {
         setCategories([]);
@@ -231,7 +231,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         const sliderList = Object.keys(data).map(key => ({
           ...data[key],
           id: key
-        }));
+        })).sort((a, b) => new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime());
         setSliders(sliderList);
       } else {
         setSliders([]);
